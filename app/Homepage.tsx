@@ -1,40 +1,214 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  TextInput,
+  StatusBar,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+
+// DUMMY DATA PRODUK
+const dummyProducts = [
+  { id: 1, name: "Batagor Spesial Bandung", price: 25000, rating: 4.9, sold: 1230, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" },
+  { id: 2, name: "Kebaya Modern Bordir Premium", price: 450000, rating: 5.0, sold: 892, image: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?w=400" },
+  { id: 3, name: "Kopi Arabica Gayo 500g", price: 85000, rating: 4.8, sold: 2100, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" },
+  { id: 4, name: "Meja Kayu Jati Minimalis", price: 1250000, rating: 4.7, sold: 456, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" },
+  { id: 6, name: "Tas Anyaman Rotan Bali", price: 280000, rating: 4.8, sold: 789, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" },
+  { id: 7, name: "Keripik Tempe Homemade", price: 35000, rating: 4.9, sold: 5670, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" },
+  { id: 8, name: "Lukisan Kanvas Abstrak", price: 750000, rating: 5.0, sold: 234, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" },
+];
 
 export default function Homepage() {
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<number>(1);
+
   const categories = [
-    { id: 1, name: "Electronics" },
-    { id: 2, name: "Fashion" },
-    { id: 3, name: "Home" },
-    { id: 4, name: "Sports" },
-    { id: 5, name: "Gaming" },
-    { id: 6, name: "Beauty" },
+    { id: 1, name: "Semua", icon: "view-grid-outline" },
+    { id: 2, name: "Kuliner", icon: "food-outline" },
+    { id: 3, name: "Jasa", icon: "hammer-outline" },
+    { id: 4, name: "Fashion", icon: "shirt-outline" },
+    { id: 5, name: "Kerajinan", icon: "brush-outline" },
+    { id: 6, name: "Kesehatan", icon: "heart-outline" },
+    { id: 7, name: "Pertanian", icon: "leaf-outline" },
+    { id: 8, name: "Elektronik", icon: "laptop-outline" },
+    { id: 9, name: "Furniture", icon: "sofa-outline" },
+    { id: 10, name: "Edukasi", icon: "school-outline" },
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="p-4">
+    <>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <ScrollView showsVerticalScrollIndicator={false}>
 
-        <Text className="text-lg font-semibold mb-3">Kategori</Text>
+          {/* HEADER - PROFILE */}
+          <View className="bg-white px-6 pt-4 pb-6 shadow-sm">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center space-x-4">
+                <Image
+                  source={require("../assets/images/Profile.jpg")}
+                  className="max-w-14 max-h-14 rounded-full border-2 border-indigo-100"
+                />
+                <View>
+                  <Text className="text-2xl font-bold text-gray-800">Halo, Elaina!</Text>
+                  <Text className="text-gray-500">Selamat berbelanja lagi bro</Text>
+                </View>
+              </View>
+              <View className="flex-row gap-4">
+                <TouchableOpacity className="relative">
+                  <Ionicons name="heart-outline" size={28} color="#1f2937" />
+                  <View className="absolute -top-1 -right-1 bg-red-500 w-3 h-3 rounded-full" />
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Ionicons name="notifications-outline" size={28} color="#1f2937" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
 
-        {/* Horizontal Scroll - Web Friendly */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ columnGap: 10 }}
-        >
-          {categories.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              className="bg-blue-500 px-4 py-2 rounded-xl"
-              activeOpacity={0.7}
-            >
-              <Text className="text-white font-medium">{item.name}</Text>
-            </TouchableOpacity>
-          ))}
+          {/* SEARCH BAR */}
+          <View className="px-6 mt-6">
+            <View className="flex-row items-center bg-white rounded-2xl shadow-md px-5 py-4 border border-gray-100">
+              <Ionicons name="search" size={22} color="#9ca3af" />
+              <TextInput
+                className="ml-3 flex-1 text-base text-gray-800"
+                placeholder="Cari apa hayo..."
+                placeholderTextColor="#9ca3af"
+                value={search}
+                onChangeText={setSearch}
+              />
+              {search.length > 0 && (
+                <TouchableOpacity onPress={() => setSearch("")}>
+                  <Ionicons name="close-circle" size={22} color="#9ca3af" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
+          {/* KATEGORI */}
+          <View className="mt-8 px-6">
+            <Text className="text-xl font-bold text-gray-800 mb-4">Kategori</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-3">
+              {categories.map((item) => {
+                const isActive = selectedCategory === item.id;
+                return (
+                  <TouchableOpacity key={item.id} activeOpacity={0.8} onPress={() => setSelectedCategory(item.id)}>
+                    {isActive ? (
+                      <LinearGradient colors={["#6366f1", "#8b5cf6"]} className="flex-row items-center px-5 py-3 rounded-2xl shadow-lg">
+                        <Ionicons name={item.icon as any} size={20} color="white" />
+                        <Text className="text-white font-semibold ml-2">{item.name}</Text>
+                      </LinearGradient>
+                    ) : (
+                      <View className="flex-row items-center px-5 py-3 rounded-2xl bg-white border border-gray-200 shadow-sm">
+                        <Ionicons name={item.icon as any} size={20} color="#6b7280" />
+                        <Text className="text-gray-700 font-medium ml-2">{item.name}</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* Promosi */}
+          <View className="mt-8 px-6 mb-8">
+            <View className="bg-gradient-to-r from-orange-500 to-red-600 rounded-3xl p-8 shadow-2xl overflow-hidden relative">
+              <View className="absolute -top-20 -right-20 w-48 h-48 bg-white/10 rounded-full" />
+              <View className="absolute -bottom-16 -left-16 w-64 h-64 bg-white/10 rounded-full" />
+              <View className="relative z-10">
+                <Text className="text-white text-2xl font-bold text-center mb-3">
+                  Ingin Jualan di Sini?
+                </Text>
+                <Text className="text-white/90 text-base text-center leading-6 px-4">
+                  Gabung sama ribuan UMKM sukses, jualan gampang, pembeli banjir!
+                </Text>
+                <TouchableOpacity className="mt-6 bg-white rounded-2xl px-8 py-4 shadow-lg self-center">
+                  <Text className="text-orange-600 text-lg font-bold text-center">
+                    Daftar Sekarang Gratis!
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
+          {/*Produk Grid */}
+          {/* Produk Grid - SUPER RAPIH & SAMA RATA */}
+          <View className="px-6 pb-10">
+            <View className="flex-row items-center justify-between mb-6">
+              <Text className="text-2xl font-bold text-gray-800">Produk Terbaru</Text>
+              <TouchableOpacity>
+                <Text className="text-indigo-600 font-semibold">Lihat Semua</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Grid 2 Kolom - Rapih Banget */}
+            <View className="flex-row flex-wrap justify-between">
+              {dummyProducts.map((product) => (
+                <TouchableOpacity
+                  key={product.id}
+                  activeOpacity={0.8}
+                  className="w-[48%] mb-6"
+                >
+                  <View className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 h-full flex flex-col">
+                    {/* Gambar */}
+                    <View className="relative">
+                      <Image
+                        source={{ uri: product.image }}
+                        className="w-full h-56"
+                        resizeMode="cover"
+                      />
+                      <View className="absolute top-3 left-3 bg-red-500 px-3 py-1 rounded-full">
+                        <Text className="text-white text-xs font-bold">HOT</Text>
+                      </View>
+                    </View>
+
+                    {/* Konten Info - Fleksibel & Rapih */}
+                    <View className="p-4 flex-1 flex flex-col justify-between">
+                      <View>
+                        <Text 
+                          className="text-gray-800 font-bold text-base leading-5"
+                          numberOfLines={2}
+                          style={{ minHeight: 44 }} // Biar semua card punya tinggi nama yang sama
+                        >
+                          {product.name}
+                        </Text>
+                        
+                        <Text className="text-2xl font-black text-orange-500 mt-3">
+                          Rp {product.price.toLocaleString("id-ID")}
+                        </Text>
+                      </View>
+
+                      {/* Rating + Love Icon - Selalu di bawah */}
+                      <View className="flex-row items-center justify-between mt-4 pt-2 border-t border-gray-100">
+                        <View className="flex-row items-center">
+                          <Ionicons name="star" size={18} color="#fbbf24" />
+                          <Text className="text-sm font-semibold text-gray-700 ml-1">
+                            {product.rating}
+                          </Text>
+                          <Text className="text-xs text-gray-500 ml-2">
+                            ({product.sold} terjual)
+                          </Text>
+                        </View>
+                        <TouchableOpacity className="p-2 -mr-2">
+                          <Ionicons name="heart-outline" size={22} color="#94a3b8" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+          
+          {/* SPACER BIAR SCROLL NYAMAN */}
+          <View className="h-20" />
         </ScrollView>
-
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </>
   );
 }

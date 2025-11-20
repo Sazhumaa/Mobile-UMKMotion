@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FlatList, Image, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 export default function Pokemon() {
     const [loading, setLoading] = useState<any>(true)
     const [items, setItems] = useState<any[]>([])
@@ -40,7 +41,7 @@ export default function Pokemon() {
     function renderItem({ item }: {item:any}) {
         return (
             <TouchableOpacity className="flex-1 m-2 bg-gray-100 
-            rounded-xl items-center p-3 min-2-[140px]"
+            rounded-xl items-center p-3 min-2-[140px]" onPress={() => router.push (`/pokeapi/${item.id}` as any)}
             >   
                 <Image source={{ uri: item.image }}
                 className="w-24 h-24 mb-2"/>
