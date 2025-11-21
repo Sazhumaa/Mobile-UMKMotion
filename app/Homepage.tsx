@@ -13,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
-// DUMMY DATA PRODUK
+// dummy data produk
 const dummyProducts = [
   { id: 1, name: "Batagor Spesial Bandung", price: 25000, rating: 4.9, sold: 1230, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400" },
   { id: 2, name: "Kebaya Modern Bordir Premium", price: 450000, rating: 5.0, sold: 892, image: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?w=400" },
@@ -165,7 +165,17 @@ const categories = [
                 key={product.id}
                 activeOpacity={0.8}
                 className="w-[48%] mb-6"
-                onPress={() => router.push(`/Detailproduk?id=${product.id}`)}
+                onPress={() => router.push({
+                  pathname: "/Detailproduct",
+                  params: {
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    rating: product.rating,
+                    sold: product.sold,
+                    image: product.image,
+                  },
+                })}
               >
                   <View className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 h-full flex flex-col">
                     {/* Gambar */}
@@ -196,7 +206,7 @@ const categories = [
                         </Text>
                       </View>
 
-                      {/* Rating + Love Icon - Selalu di bawah */}
+                      {/* Rating */}
                       <View className="flex-row items-center justify-between mt-4 pt-2 border-t border-gray-100">
                         <View className="flex-row items-center">
                           <Ionicons name="star" size={18} color="#fbbf24" />
