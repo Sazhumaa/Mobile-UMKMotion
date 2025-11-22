@@ -3,7 +3,7 @@ import { View, Text, Image, ScrollView, TextInput, TouchableOpacity  } from "rea
 
 export default function Detailproduk() {
   const params = useLocalSearchParams();
-  const { id, name, price, rating, sold, image, desc } = params;
+  const { id, name, price, rating, sold, image, desc, storeRating, totalReviews,responseRate } = params;
 
   return (
     <ScrollView style={{ padding: 24, backgroundColor: "#f9fafb" }}>
@@ -69,18 +69,50 @@ export default function Detailproduk() {
       
       <View className="mt-6 flex-row gap-4">
         <View className="flex-1 bg-orange-500 p-4 rounded-lg items-center">
-          <Text className="font-bold text-white">
+          <TouchableOpacity className="font-bold text-white">
             Beli Sekarang
-          </Text>
+          </TouchableOpacity>
         </View>
         
-        <View className="flex-1 border-2 border-black/60 rounded-lg items-center">
-          <Text className="font-bold bg-white p-4 rounded-lg items-center ">
+        <View className="border-2 border-black/60 rounded-lg items-center">
+          <TouchableOpacity className="font-bold bg-white p-4 rounded-lg items-center ">
             Tambah Kekranjang 🛒
-          </Text>
+          </TouchableOpacity>
         </View>
       </View>
       
+      <View className="mt-6">
+        <View className="rounded-2xl p-6 border border-black/20 bg-white">
+          <View className="flex-row items-center justify-between">
+            <View>
+            <Text className="font-bold text-lg">Nusantara Rasa</Text>
+            <Text className="text-gray-600">Aktif beberapa menit lalu</Text>
+            </View>
+
+            <TouchableOpacity className="bg-orange-500 px-6 py-4 rounded-lg">
+              <Text className="text-white font-semibold">Lihat Toko  🏬</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View className="flex-row justify-between mt-6 px-2">
+            <View className="items-center flex-1">
+              <Text className="text-gray-700 text-base font-semibold">⭐ {storeRating}</Text>
+              <Text className="text-gray-500 text-sm">Rating Toko</Text>
+            </View>
+
+            <View className="items-center flex-1">
+              <Text className="text-gray-700 text-base font-semibold">{totalReviews}+</Text>
+              <Text className="text-gray-500 text-sm">Total Review</Text>
+            </View>
+
+            <View className="items-center flex-1">
+              <Text className="text-gray-700 text-base font-semibold">{responseRate}</Text>
+              <Text className="text-gray-500 text-sm">Response Rate</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
 
       <View
         style={{
