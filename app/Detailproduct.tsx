@@ -1,9 +1,9 @@
 import { useLocalSearchParams } from "expo-router";
-import { View, Text, Image, ScrollView } from "react-native";
+import { View, Text, Image, ScrollView, TextInput, TouchableOpacity  } from "react-native";
 
 export default function Detailproduk() {
   const params = useLocalSearchParams();
-  const { id, name, price, rating, sold, image } = params;
+  const { id, name, price, rating, sold, image, desc } = params;
 
   return (
     <ScrollView style={{ padding: 24, backgroundColor: "#f9fafb" }}>
@@ -38,6 +38,49 @@ export default function Detailproduk() {
       <Text style={{ marginTop: 10, fontSize: 16, color: "#6b7280" }}>
         ⭐ {rating} • {sold} terjual
       </Text>
+      
+      <View className="mt-6 bg-gray-500/10 p-4 rounded-lg">
+        <Text className="font-bold text-lg mb-2">
+          Detail Produk
+        </Text>
+        
+        <Text>
+          {desc}
+        </Text>
+      </View>
+
+      <View className="mt-6 flex-row items-center gap-4">
+        <Text className="font-bold text-lg">Qty</Text>
+
+        <TouchableOpacity className="w-10 h-10 rounded-full border-2 border-black/30 items-center justify-center bg-white">
+          <Text className="text-xl font-bold">-</Text>
+        </TouchableOpacity>
+
+        <TextInput 
+          className="bg-white p-2 rounded-lg w-14 text-center text-lg border"
+          value="1"
+          keyboardType="numeric"
+        />
+
+        <TouchableOpacity className="w-10 h-10 rounded-full border-2 border-black/30 items-center justify-center bg-white">
+          <Text className="text-xl font-bold">+</Text>
+        </TouchableOpacity>
+      </View>
+      
+      <View className="mt-6 flex-row gap-4">
+        <View className="flex-1 bg-orange-500 p-4 rounded-lg items-center">
+          <Text className="font-bold text-white">
+            Beli Sekarang
+          </Text>
+        </View>
+        
+        <View className="flex-1 border-2 border-black/60 rounded-lg items-center">
+          <Text className="font-bold bg-white p-4 rounded-lg items-center ">
+            Tambah Kekranjang 🛒
+          </Text>
+        </View>
+      </View>
+      
 
       <View
         style={{
