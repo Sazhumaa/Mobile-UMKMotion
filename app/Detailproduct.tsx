@@ -111,6 +111,14 @@ export default function Detailproduk() {
             </View>
           </View>
         </View>
+        
+        <View className="mt-6">
+          <Text className="font-bold text-xl">Rekomendasi Produk</Text>
+          
+          <View>
+            
+          </View>
+        </View>
       </View>
 
 
