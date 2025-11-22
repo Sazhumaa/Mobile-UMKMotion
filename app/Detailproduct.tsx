@@ -1,10 +1,17 @@
-import { useLocalSearchParams } from "expo-router";
-import { View, Text, Image, ScrollView, TextInput, TouchableOpacity  } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { View, Text, Image, ScrollView, TextInput, TouchableOpacity, FlatList } from "react-native";
+import dataProduk from "./data/product";
 
 export default function Detailproduk() {
   const params = useLocalSearchParams();
-  const { id, name, price, rating, sold, image, desc, storeRating, totalReviews,responseRate } = params;
-
+  const router = useRouter();
+  
+  const { id, name, image, price, rating, sold, desc, storeRating, totalReviews, responseRate } = params;
+  const rekomendasi = dataProduk
+    .filter( item => item.id !==Number(id) )
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 10);
+  
   return (
     <ScrollView style={{ padding: 24, backgroundColor: "#f9fafb" }}>
       <Image
@@ -116,7 +123,50 @@ export default function Detailproduk() {
           <Text className="font-bold text-xl">Rekomendasi Produk</Text>
           
           <View>
-            
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginTop: 12 }}
+              contentContainerStyle={{ paddingVertical: 4, paddingLeft: 2 }}
+            >
+              {rekomendasi.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  activeOpacity={0.92}
+                  onPress={() =>
+                    router.push({ pathname: "/Detailproduct", params: { ...item } })
+                  }
+                  className="w-44 mr-4 bg-white rounded-2xl p-3 overflow-hidden relative shadow-md"
+                >
+                  <View className="absolute top-3 left-3 bg-red-500 px-2 py-1 rounded-full z-10">
+                    <Text className="text-xs font-bold text-white">HOT</Text>
+                  </View>
+
+                  <Image
+                    source={{ uri: item.image }}
+                    style={{ width: "100%", height: 150 }}
+                    className="rounded-lg bg-gray-200"
+                    resizeMode="cover"
+                  />
+
+                  <Text
+                    numberOfLines={2}
+                    className="font-bold text-sm text-gray-800 mt-3"
+                  >
+                    {item.name}
+                  </Text>
+
+                  <Text className="text-orange-500 font-extrabold text-base mt-1 font-bold">
+                    Rp {Number(item.price).toLocaleString("id-ID")}
+                  </Text>
+
+                  <View className="flex-row items-center mt-2">
+                    <Text className="text-yellow-400 font-bold mr-2">⭐{item.rating} </Text>
+                    <Text className="text-gray-500 text-xs">{item.sold}  •  terjual</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
         </View>
       </View>
