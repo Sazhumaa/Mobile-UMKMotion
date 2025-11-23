@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import {
   View,
   Text,
@@ -56,7 +56,7 @@ export default function Homepage() {
                 </View>
               </View>
               <View className="flex-row gap-4">
-                <TouchableOpacity className="relative">
+                <TouchableOpacity className="relative" onPress={() => router.push({pathname: "/Favorites"})}>
                   <Ionicons name="heart-outline" size={28} color="#1f2937" />
                   <View className="absolute -top-1 -right-1 bg-red-500 w-3 h-3 rounded-full" />
                 </TouchableOpacity>
