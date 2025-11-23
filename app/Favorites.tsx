@@ -246,7 +246,7 @@ export default function Favorites() {
         </View>
       </ScrollView>
 
-      {/* MODAL FILTER */}
+      {/* Filter modal */}
       <Modal visible={filterVisible} transparent animationType="none">
         <TouchableWithoutFeedback onPress={closeFilter}>
           <View className="flex-1 bg-black/40 justify-end">
