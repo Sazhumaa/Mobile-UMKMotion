@@ -124,7 +124,7 @@ export default function Favorites() {
         {/* Header */}
         <View className="px-6 pt-4">
           <View className="flex-row items-center px-5 py-5 bg-white rounded-3xl shadow-sm border border-gray-100">
-            <LinearGradient colors={["#FF5A9E", "#FF296D"]} className="w-14 h-14 rounded-2xl justify-center items-center">
+            <LinearGradient colors={["#FF7733", "#FF571A"]} className="w-14 h-14 rounded-2xl justify-center items-center">
               <Ionicons name="heart" size={28} color="white" />
             </LinearGradient>
             <View className="ml-4">
@@ -153,7 +153,7 @@ export default function Favorites() {
               return (
                 <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} className="mr-3">
                   <LinearGradient
-                    colors={activeTab === tab ? ["#FF5A9E", "#FF296D"] : ["#e5e7eb", "#e5e7eb"]}
+                    colors={activeTab === tab ? ["#FF7733", "#FF571A"] : ["#e5e7eb", "#e5e7eb"]}
                     className="rounded-2xl px-5 py-3.5 flex-row items-center gap-2"
                   >
                     <Ionicons name={icon as any} size={18} color={activeTab === tab ? "white" : "#666"} />
@@ -173,7 +173,7 @@ export default function Favorites() {
             <Ionicons name="options-outline" size={22} color="#555" />
             <Text className="font-semibold text-gray-700">Filter</Text>
             {selectedCategories.length > 1 && (
-              <View className="ml-2 bg-pink-600 w-6 h-6 rounded-full justify-center items-center">
+              <View className="ml-2 bg-orange-600 w-6 h-6 rounded-full justify-center items-center">
                 <Text className="text-white text-xs font-bold">{selectedCategories.length - 1}</Text>
               </View>
             )}
@@ -187,7 +187,7 @@ export default function Favorites() {
         {/* List Item — Support Produk, Konsultan, & Toko */}
         <View className="px-6 mt-6 pb-20">
           <Text className="text-gray-600 mb-4">
-            Menampilkan <Text className="font-bold text-pink-600">{filteredAndSorted.length}</Text> item
+            Menampilkan <Text className="font-bold text-orange-600">{filteredAndSorted.length}</Text> item
           </Text>
           {filteredAndSorted.map((item) => (
             <View key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 mb-5">
@@ -199,7 +199,7 @@ export default function Favorites() {
                   </View>
                 )}
                 <TouchableOpacity className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full">
-                  <Ionicons name="trash-outline" size={22} color="#FF296D" />
+                  <Ionicons name="trash-outline" size={22} color="#E54B16" />
                 </TouchableOpacity>
               </View>
 
@@ -221,7 +221,7 @@ export default function Favorites() {
                   <View className="flex-row items-center justify-between mt-4">
                     <Text className="text-gray-600">{item.products} produk</Text>
                     <TouchableOpacity>
-                      <LinearGradient colors={["#FF5A9E", "#FF296D"]} className="px-6 py-3 rounded-2xl">
+                      <LinearGradient colors={["#FF7733", "#FF571A"]} className="px-6 py-3 rounded-2xl">
                         <Text className="text-white font-bold">Kunjungi Toko</Text>
                       </LinearGradient>
                     </TouchableOpacity>
@@ -230,10 +230,10 @@ export default function Favorites() {
                   <View className="flex-row items-end justify-between mt-4">
                     <View>
                       <Text className="text-gray-400 line-through text-sm">{item.priceBefore}</Text>
-                      <Text className="text-2xl font-extrabold text-pink-600 mt-1">{item.priceAfter}</Text>
+                      <Text className="text-2xl font-extrabold text-orange-600 mt-1">{item.priceAfter}</Text>
                     </View>
                     <TouchableOpacity>
-                      <LinearGradient colors={["#FF5A9E", "#FF296D"]} className="px-6 py-3.5 rounded-2xl flex-row items-center gap-2">
+                      <LinearGradient colors={["#FF7733", "#FF571A"]} className="px-6 py-3.5 rounded-2xl flex-row items-center gap-2">
                         <Ionicons name="cart-outline" size={22} color="white" />
                         <Text className="text-white font-bold">Keranjang</Text>
                       </LinearGradient>
@@ -245,9 +245,6 @@ export default function Favorites() {
           ))}
         </View>
       </ScrollView>
-
-      {/* MODAL FILTER & SORT — TETAP SAMA, PUTIH BERSIH, SCROLL */}
-      {/* (sama persis kayak sebelumnya — gw skip biar nggak kepanjangan, tapi pastiin pake yang maxHeight: 380 + bg-white) */}
 
       {/* MODAL FILTER */}
       <Modal visible={filterVisible} transparent animationType="none">
@@ -269,7 +266,7 @@ export default function Favorites() {
                         return (
                           <TouchableOpacity key={cat.id} onPress={() => toggleCategory(cat.id)} className="mb-4">
                             {isActive ? (
-                              <LinearGradient colors={["#FF5A9E", "#FF296D"]} className="px-6 py-4 rounded-full shadow-sm">
+                              <LinearGradient colors={["#FF7733", "#FF571A"]} className="px-6 py-4 rounded-full shadow-sm">
                                 <Text className="text-white font-semibold text-center">{cat.name}</Text>
                               </LinearGradient>
                             ) : (
@@ -289,7 +286,7 @@ export default function Favorites() {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* MODAL SORT — SAMA */}
+      {/* MODAL SORT */}
       <Modal visible={sortVisible} transparent animationType="none">
         <TouchableWithoutFeedback onPress={closeSort}>
           <View className="flex-1 bg-black/40 justify-end">
@@ -309,7 +306,7 @@ export default function Favorites() {
                         return (
                           <TouchableOpacity key={opt.key} onPress={() => { setSortBy(opt.key); closeSort(); }} className="mb-4">
                             {isActive ? (
-                              <LinearGradient colors={["#FF5A9E", "#FF296D"]} className="px-6 py-4 rounded-full shadow-sm">
+                              <LinearGradient colors={["#FF7733", "#FF571A"]} className="px-6 py-4 rounded-full shadow-sm">
                                 <Text className="text-white font-semibold text-center">{opt.label}</Text>
                               </LinearGradient>
                             ) : (

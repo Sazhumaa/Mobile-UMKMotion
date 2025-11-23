@@ -60,8 +60,9 @@ export default function Homepage() {
                   <Ionicons name="heart-outline" size={28} color="#1f2937" />
                   <View className="absolute -top-1 -right-1 bg-red-500 w-3 h-3 rounded-full" />
                 </TouchableOpacity>
-                <TouchableOpacity>
-                  <Ionicons name="notifications-outline" size={28} color="#1f2937" />
+                
+                <TouchableOpacity onPress={() => router.push({pathname: "/Cartpage"})}>
+                  <Ionicons name="cart-outline" size={28} color="#1f2937" />
                 </TouchableOpacity>
               </View>
             </View>
