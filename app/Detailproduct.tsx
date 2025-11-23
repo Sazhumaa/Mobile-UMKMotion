@@ -22,12 +22,14 @@ export default function Detailproduk() {
   
   const [quantity, setQuantity] = useState(1);
   const [showPopup, setShowPopup] = useState(false);
+  const [popupData, setPopupData] = useState<{name: string, image: string, price: number, quantity: number} | null>(null);
+  const [rekomendasi, setRekomendasi] = useState<any[]>([]);
   
   // Animasi untuk popup
   const popupAnim = useRef(new Animated.Value(-100)).current;
   const popupOpacity = useRef(new Animated.Value(0)).current;
   
-  // Refs untuk menyimpan timeout ID
+  // Refs untuk menyimpan timeout ID dan state animasi
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isAnimating = useRef(false);
 
@@ -46,10 +48,44 @@ export default function Detailproduk() {
     categoryId
   } = params;
 
-  const rekomendasi = dataProduk
-    .filter(item => item.id !== Number(id))
-    .sort(() => 0.5 - Math.random())
-    .slice(0, 10);
+  // Generate rekomendasi sekali saja berdasarkan categoryId
+  useEffect(() => {
+    const currentProductId = Number(id);
+    const currentCategoryId = Number(categoryId) || 2;
+    
+    // Filter produk dengan category yang sama, exclude produk saat ini
+    const produkSameCategory = dataProduk.filter(item => 
+      item.id !== currentProductId && 
+      item.categoryId === currentCategoryId
+    );
+    
+    // Jika produk dengan category yang sama kurang dari 10, tambahkan dari category lain
+    let recommendedProducts = [...produkSameCategory];
+    
+    if (recommendedProducts.length < 10) {
+      const otherProducts = dataProduk.filter(item => 
+        item.id !== currentProductId && 
+        item.categoryId !== currentCategoryId
+      );
+      
+      // Ambil produk dari category lain sampai cukup 10
+      recommendedProducts = [
+        ...recommendedProducts,
+        ...otherProducts.slice(0, 10 - recommendedProducts.length)
+      ];
+    }
+    
+    // Jika masih kurang dari 10, ulangi dari awal
+    if (recommendedProducts.length < 10) {
+      const allOtherProducts = dataProduk.filter(item => item.id !== currentProductId);
+      while (recommendedProducts.length < 10 && allOtherProducts.length > 0) {
+        recommendedProducts.push(allOtherProducts[recommendedProducts.length % allOtherProducts.length]);
+      }
+    }
+    
+    // Potong maksimal 10 produk
+    setRekomendasi(recommendedProducts.slice(0, 10));
+  }, [id, categoryId]); // Hanya regenerate ketika id atau categoryId berubah
 
   // Cleanup timeout ketika component unmount
   useEffect(() => {
@@ -71,25 +107,68 @@ export default function Detailproduk() {
     setQuantity(quantity + 1);
   };
 
-  // Show popup animation
-  const showPopupAnimation = () => {
-    // Jika sedang animasi, jangan jalankan lagi
-    if (isAnimating.current) return;
+  // Hide popup animation dengan slide out ke atas
+  const hidePopupAnimation = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
     
+    Animated.parallel([
+      Animated.timing(popupAnim, {
+        toValue: -100,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(popupOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      setShowPopup(false);
+      setPopupData(null);
+      isAnimating.current = false;
+    });
+  };
+
+  // Show popup animation dengan slide in dari atas
+  const showPopupAnimation = (productData: {name: string, image: string, price: number, quantity: number}) => {
+    // Jika sedang animasi, langsung hide dulu yang lama dengan cepat
+    if (isAnimating.current) {
+      // Reset animasi dan langsung hide yang lama
+      Animated.timing(popupAnim, {
+        toValue: -100,
+        duration: 150,
+        useNativeDriver: true,
+      }).start(() => {
+        // Set data baru dan langsung show yang baru
+        setPopupData(productData);
+        setShowPopup(true);
+        startFreshAnimation();
+      });
+    } else {
+      // Jika tidak ada animasi, langsung show yang baru
+      setPopupData(productData);
+      setShowPopup(true);
+      startFreshAnimation();
+    }
+  };
+
+  // Start fresh animation untuk popup baru
+  const startFreshAnimation = () => {
     isAnimating.current = true;
-    setShowPopup(true);
     
-    // Reset animasi
+    // Reset animasi ke posisi awal
     popupAnim.setValue(-100);
     popupOpacity.setValue(0);
     
     // Batalkan timeout sebelumnya jika ada
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
     }
     
-    // Animasi masuk
+    // Animasi masuk yang fresh
     Animated.parallel([
       Animated.timing(popupAnim, {
         toValue: 0,
@@ -109,32 +188,7 @@ export default function Detailproduk() {
     }, 3000);
   };
 
-  // Hide popup animation
-  const hidePopupAnimation = () => {
-    // Batalkan timeout jika masih ada
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    
-    Animated.parallel([
-      Animated.timing(popupAnim, {
-        toValue: -100,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(popupOpacity, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      })
-    ]).start(() => {
-      setShowPopup(false);
-      isAnimating.current = false;
-    });
-  };
-
-  // Handle add to cart dengan popup - dengan debounce
+  // Handle add to cart dengan popup - dengan sistem antrian
   const handleAddToCart = () => {
     const product = {
       id: Number(id),
@@ -150,10 +204,18 @@ export default function Detailproduk() {
     };
 
     addToCart(product);
-    showPopupAnimation();
+    
+    const popupProductData = {
+      name: name as string,
+      image: image as string,
+      price: Number(price),
+      quantity: quantity
+    };
+    
+    showPopupAnimation(popupProductData);
   };
 
-  // Handle buy now - dengan debounce
+  // Handle buy now - dengan sistem antrian
   const handleBuyNow = () => {
     const product = {
       id: Number(id),
@@ -169,7 +231,15 @@ export default function Detailproduk() {
     };
 
     addToCart(product);
-    showPopupAnimation();
+    
+    const popupProductData = {
+      name: name as string,
+      image: image as string,
+      price: Number(price),
+      quantity: quantity
+    };
+    
+    showPopupAnimation(popupProductData);
     
     // Navigate ke cart page setelah delay kecil
     setTimeout(() => {
@@ -362,20 +432,10 @@ export default function Detailproduk() {
             </View>
           </View>
         </View>
-
-        <View
-          style={{
-            marginTop: 24,
-            padding: 12,
-            backgroundColor: "#f3f4f6",
-            borderRadius: 12,
-          }}
-        >
-        </View>
       </ScrollView>
 
-      {/* Popup Notification - Sesuai dengan gambar */}
-      {showPopup && (
+      {/* Popup Notification */}
+      {showPopup && popupData && (
         <Animated.View 
           style={{
             position: 'absolute',
@@ -414,16 +474,16 @@ export default function Detailproduk() {
             {/* Product Info */}
             <View style={{flexDirection: "row", alignItems: "center", marginBottom: 16}}>
               <Image
-                source={{ uri: image as string }}
+                source={{ uri: popupData.image }}
                 style={{ width: 40, height: 40, borderRadius: 8, marginRight: 12 }}
                 resizeMode="cover"
               />
               <View style={{flex: 1}}>
                 <Text style={{fontSize: 14, color: "#374151", marginBottom: 4}} numberOfLines={1}>
-                  {name}
+                  {popupData.name}
                 </Text>
                 <Text style={{fontSize: 14, fontWeight: "bold", color: "#f97316"}}>
-                  {quantity} x Rp {Number(price).toLocaleString("id-ID")}
+                  {popupData.quantity} x Rp {Number(popupData.price).toLocaleString("id-ID")}
                 </Text>
               </View>
             </View>
