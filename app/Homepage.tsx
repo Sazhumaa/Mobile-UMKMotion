@@ -1,3 +1,4 @@
+// Homepage.tsx
 import React, { useState } from "react";
 import { usePathname, useRouter } from "expo-router";
 import {
@@ -9,16 +10,20 @@ import {
   TextInput,
   StatusBar,
 } from "react-native";
-
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 import dataProduk, { Product } from "./data/product";
+import { useFavorites } from "./hooks/useFavorites"; // UPDATE IMPORT
 
 export default function Homepage() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<number>(1);
+  
+  // PAKAI USE_FAVORITES HOOK
+  const { favorites, toggleFavorite, isFavorited } = useFavorites();
+
   const router = useRouter();
 
   const categories = [
@@ -34,14 +39,32 @@ export default function Homepage() {
     { id: 10, name: "Edukasi", icon: "school-outline" },
   ];
 
-  const dummyProducts = dataProduk; // ⬅ ambil data produk
+  const dummyProducts = dataProduk;
+
+  // Fungsi toggle favorite yang baru
+  const handleToggleFavorite = (product: Product) => {
+    toggleFavorite({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      rating: product.rating,
+      sold: product.sold,
+      image: product.image,
+      desc: product.desc,
+      storeRating: product.storeRating,
+      totalReviews: product.totalReviews,
+      responseRate: product.responseRate,
+      seller: product.seller,
+      categoryId: product.categoryId,
+      addedAt: new Date().toISOString()
+    });
+  };
 
   return (
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <SafeAreaView className="flex-1 bg-gray-50">
         <ScrollView showsVerticalScrollIndicator={false}>
-
           {/* Profile */}
           <View className="bg-white px-6 pt-4 pb-6 shadow-sm">
             <View className="flex-row items-center justify-between">
@@ -56,12 +79,19 @@ export default function Homepage() {
                 </View>
               </View>
               <View className="flex-row gap-4">
-                <TouchableOpacity className="relative" onPress={() => router.push({pathname: "/Favorites"})}>
+                <TouchableOpacity 
+                  className="relative" 
+                  onPress={() => router.push({ pathname: "/Favorites" })}
+                >
                   <Ionicons name="heart-outline" size={28} color="#1f2937" />
-                  <View className="absolute -top-1 -right-1 bg-red-500 w-3 h-3 rounded-full" />
+                  {favorites.length > 0 && (
+                    <View className="absolute -top-1 -right-1 bg-red-500 w-5 h-5 rounded-full justify-center items-center">
+                      <Text className="text-white text-xs font-bold">{favorites.length}</Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
                 
-                <TouchableOpacity onPress={() => router.push({pathname: "/Cartpage"})}>
+                <TouchableOpacity onPress={() => router.push({ pathname: "/Cartpage" })}>
                   <Ionicons name="cart-outline" size={28} color="#1f2937" />
                 </TouchableOpacity>
               </View>
@@ -76,7 +106,6 @@ export default function Homepage() {
                 size={22}
                 color={search.length > 0 ? "#f97316" : "#9ca3af"}
               />
-
               <TextInput
                 className="ml-3 flex-1 text-base text-gray-800"
                 placeholder="Cari apa lu woi..."
@@ -84,7 +113,6 @@ export default function Homepage() {
                 value={search}
                 onChangeText={setSearch}
               />
-
               {search.length > 0 && (
                 <TouchableOpacity onPress={() => setSearch("")}>
                   <Ionicons name="close-circle" size={22} color="#9ca3af" />
@@ -107,12 +135,12 @@ export default function Homepage() {
                         className="flex-column items-center px-6 py-6 rounded-2xl shadow-lg"
                       >
                         <Ionicons name={item.icon as any} size={60} color="white" />
-                        <Text className="text-white font-semibold ml-2">{item.name}</Text>
+                        <Text className="text-white font-semibold mt-2">{item.name}</Text>
                       </LinearGradient>
                     ) : (
                       <View className="flex-column items-center px-6 py-6 rounded-2xl bg-white border border-gray-200 shadow-sm">
                         <Ionicons name={item.icon as any} size={60} color="#6b7280" />
-                        <Text className="text-gray-700 font-medium ml-2">{item.name}</Text>
+                        <Text className="text-gray-700 font-medium mt-2">{item.name}</Text>
                       </View>
                     )}
                   </TouchableOpacity>
@@ -152,63 +180,79 @@ export default function Homepage() {
             </View>
 
             <View className="flex-row flex-wrap justify-between">
-              {dummyProducts.map((product ) => (
-                <TouchableOpacity
-                  key={product.id}
-                  activeOpacity={0.8}
-                  className="w-[48%] mb-6"
-                  onPress={() =>
-                    router.push({
-                      pathname: "/Detailproduct",
-                      params: { ...product },
-                    })
-                  }
-                >
-                  <View className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 h-full flex flex-col">
-                    <View className="relative">
-                      <Image
-                        source={{ uri: product.image }}
-                        className="w-full h-56"
-                        resizeMode="cover"
-                      />
-                      <View className="absolute top-3 left-3 bg-red-500 px-3 py-1 rounded-full">
-                        <Text className="text-white text-xs font-bold">HOT</Text>
-                      </View>
-                    </View>
+              {dummyProducts.map((product) => {
+                const liked = isFavorited(product.id);
 
-                    <View className="p-4 flex-1 flex flex-col justify-between">
-                      <View>
-                        <Text
-                          className="text-gray-800 font-bold text-base leading-5"
-                          numberOfLines={2}
-                          style={{ minHeight: 44 }}
-                        >
-                          {product.name}
-                        </Text>
-
-                        <Text className="text-2xl font-black text-orange-500 mt-3">
-                          Rp {product.price.toLocaleString("id-ID")}
-                        </Text>
+                return (
+                  <TouchableOpacity
+                    key={product.id}
+                    activeOpacity={0.8}
+                    className="w-[48%] mb-6"
+                    onPress={() =>
+                      router.push({
+                        pathname: "/Detailproduct",
+                        params: { ...product },
+                      })
+                    }
+                  >
+                    <View className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 h-full flex flex-col">
+                      <View className="relative">
+                        <Image
+                          source={{ uri: product.image }}
+                          className="w-full h-56"
+                          resizeMode="cover"
+                        />
+                        <View className="absolute top-3 left-3 bg-red-500 px-3 py-1 rounded-full">
+                          <Text className="text-white text-xs font-bold">HOT</Text>
+                        </View>
                       </View>
 
-                      <View className="flex-row items-center justify-between mt-4 pt-2 border-t border-gray-100">
-                        <View className="flex-row items-center">
-                          <Ionicons name="star" size={18} color="#fbbf24" />
-                          <Text className="text-sm font-semibold text-gray-700 ml-1">
-                            {product.rating}
+                      <View className="p-4 flex-1 flex flex-col justify-between">
+                        <View>
+                          <Text
+                            className="text-gray-800 font-bold text-base leading-5"
+                            numberOfLines={2}
+                            style={{ minHeight: 44 }}
+                          >
+                            {product.name}
                           </Text>
-                          <Text className="text-xs text-gray-500 ml-2">
-                            ({product.sold} terjual)
+
+                          <Text className="text-2xl font-black text-orange-500 mt-3">
+                            Rp {product.price.toLocaleString("id-ID")}
                           </Text>
                         </View>
-                        <TouchableOpacity className="p-2 -mr-2">
-                          <Ionicons name="heart-outline" size={22} color="#94a3b8" />
-                        </TouchableOpacity>
+
+                        <View className="flex-row items-center justify-between mt-4 pt-2 border-t border-gray-100">
+                          <View className="flex-row items-center">
+                            <Ionicons name="star" size={18} color="#fbbf24" />
+                            <Text className="text-sm font-semibold text-gray-700 ml-1">
+                              {product.rating}
+                            </Text>
+                            <Text className="text-xs text-gray-500 ml-2">
+                              ({product.sold} terjual)
+                            </Text>
+                          </View>
+
+                          {/* Tombol Like dengan toggle yang baru */}
+                          <TouchableOpacity
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              handleToggleFavorite(product);
+                            }}
+                            className="p-2 -mr-2"
+                          >
+                            <Ionicons
+                              name={liked ? "heart" : "heart-outline"}
+                              size={26}
+                              color={liked ? "#ef4444" : "#94a3b8"}
+                            />
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
 

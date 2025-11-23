@@ -1,3 +1,4 @@
+// Favorites.tsx
 import React, { useState, useMemo } from "react";
 import {
   View,
@@ -14,11 +15,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useFavorites } from "./hooks/useFavorites"; // UPDATE IMPORT
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function Favorites() {
-  // TAB BARU: Semua, Produk, Konsultan, Toko
+  // PAKAI USE_FAVORITES HOOK
+  const { favorites, removeFavorite } = useFavorites();
+  
   const [activeTab, setActiveTab] = useState<"all" | "product" | "consultant" | "store">("all");
   const [sortBy, setSortBy] = useState("newest");
 
@@ -59,19 +63,11 @@ export default function Favorites() {
     { id: 10, name: "Edukasi" },
   ];
 
-  // DATA FAVORIT — ADA TOKO JUGA
-  const dataFavorites = [
-    { id: 1, name: "Sambal Cumi Asap Mak Rini", seller: "Nusantara Rasa", rating: 4.9, reviews: 198, priceBefore: "Rp 45.000", priceAfter: "Rp 40.500", discount: "-10%", type: "product" as const, categoryId: 2, addedAt: "2025-04-05", image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=60" },
-    { id: 2, name: "Rendang Daging Sapi Premium", seller: "Dapur Padang Asli", rating: 5.0, reviews: 312, priceBefore: "Rp 125.000", priceAfter: "Rp 99.000", discount: "-21%", type: "product" as const, categoryId: 2, addedAt: "2025-03-28", image: "https://images.unsplash.com/photo-1626645734936-69a8c1a5d9f7?auto=format&fit=crop&w=600&q=60" },
-    { id: 3, name: "Konsultasi Gizi & Diet Sehat", seller: "dr. Sari Ahmad, Sp.GK", rating: 4.8, reviews: 89, priceBefore: "Rp 350.000", priceAfter: "Rp 299.000", discount: "-15%", type: "consultant" as const, categoryId: 6, addedAt: "2025-04-01", image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=600&q=60" },
-    { id: 4, name: "Toko Batik Cirebon Jaya", seller: "Batik Cirebon Jaya", rating: 4.9, reviews: 892, followers: "12.4K", products: 156, type: "store" as const, categoryId: 4, addedAt: "2025-04-10", image: "https://images.unsplash.com/photo-1584370848010-d7fe6bc767ec?auto=format&fit=crop&w=600&q=60" },
-    { id: 5, name: "Warung Makan Bu RT", seller: "Warung Makan Bu RT", rating: 4.7, reviews: 2341, followers: "8.9K", products: 42, type: "store" as const, categoryId: 2, addedAt: "2025-03-20", image: "https://images.unsplash.com/photo-1517248135467-2c7ed3af65fa?auto=format&fit=crop&w=600&q=60" },
-  ];
-
+  // DATA FAVORIT DIAMBIL DARI CONTEXT
   const filteredAndSorted = useMemo(() => {
-    let result = dataFavorites;
+    let result = favorites;
 
-    // Filter berdasarkan tab
+    // Filter berdasarkan tab (untuk sekarang semua dianggap product)
     if (activeTab !== "all") {
       result = result.filter(i => i.type === activeTab);
     }
@@ -85,16 +81,22 @@ export default function Favorites() {
     // Sort
     result.sort((a, b) => {
       switch (sortBy) {
-        case "newest": return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
-        case "lowest": return parseInt((a.priceAfter || "0").replace(/\D/g, "")) - parseInt((b.priceAfter || "0").replace(/\D/g, ""));
-        case "highest": return parseInt((b.priceAfter || "0").replace(/\D/g, "")) - parseInt((a.priceAfter || "0").replace(/\D/g, ""));
-        case "rating": return (b.rating || 0) - (a.rating || 0);
-        case "name": return a.name.localeCompare(b.name);
-        default: return 0;
+        case "newest": 
+          return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
+        case "lowest": 
+          return a.price - b.price;
+        case "highest": 
+          return b.price - a.price;
+        case "rating": 
+          return b.rating - a.rating;
+        case "name": 
+          return a.name.localeCompare(b.name);
+        default: 
+          return 0;
       }
     });
     return result;
-  }, [activeTab, selectedCategories, sortBy]);
+  }, [favorites, activeTab, selectedCategories, sortBy]);
 
   const sortOptions = [
     { key: "newest", label: "Terbaru Ditambahkan" },
@@ -118,6 +120,11 @@ export default function Favorites() {
     }
   };
 
+  // Fungsi format harga
+  const formatPrice = (price: number) => {
+    return `Rp ${price.toLocaleString("id-ID")}`;
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -129,7 +136,7 @@ export default function Favorites() {
             </LinearGradient>
             <View className="ml-4">
               <Text className="text-2xl font-extrabold text-gray-900">Favorit Saya</Text>
-              <Text className="text-gray-500 text-base">{dataFavorites.length} item</Text>
+              <Text className="text-gray-500 text-base">{favorites.length} item</Text>
             </View>
           </View>
         </View>
@@ -142,13 +149,13 @@ export default function Favorites() {
           </View>
         </View>
 
-        {/* TABS — SEKARANG ADA TOKO */}
+        {/* TABS */}
         <View className="px-6 mt-6">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-            {(["all", "product", "consultant", "store"] as const).map((tab) => {
-              const count = tab === "all" ? dataFavorites.length : dataFavorites.filter(i => i.type === tab).length;
-              const label = tab === "all" ? "Semua" : tab === "product" ? "Produk" : tab === "consultant" ? "Konsultan" : "Toko";
-              const icon = tab === "all" ? "heart" : tab === "product" ? "cube" : tab === "consultant" ? "person" : "storefront";
+            {(["all", "product"] as const).map((tab) => {
+              const count = tab === "all" ? favorites.length : favorites.filter(i => i.type === tab).length;
+              const label = tab === "all" ? "Semua" : "Produk";
+              const icon = tab === "all" ? "heart" : "cube";
 
               return (
                 <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} className="mr-3">
@@ -184,53 +191,55 @@ export default function Favorites() {
           </TouchableOpacity>
         </View>
 
-        {/* List Item — Support Produk, Konsultan, & Toko */}
+        {/* List Item */}
         <View className="px-6 mt-6 pb-20">
           <Text className="text-gray-600 mb-4">
             Menampilkan <Text className="font-bold text-orange-600">{filteredAndSorted.length}</Text> item
           </Text>
-          {filteredAndSorted.map((item) => (
-            <View key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 mb-5">
-              <View className="relative">
-                <Image source={{ uri: item.image }} className="w-full h-48" resizeMode="cover" />
-                {item.discount && (
+          
+          {filteredAndSorted.length === 0 ? (
+            <View className="bg-white rounded-3xl p-8 items-center justify-center shadow-md border border-gray-100">
+              <Ionicons name="heart-outline" size={64} color="#d1d5db" />
+              <Text className="text-xl font-bold text-gray-500 mt-4">Belum ada favorit</Text>
+              <Text className="text-gray-400 text-center mt-2">
+                Produk yang kamu favoritkan akan muncul di sini
+              </Text>
+            </View>
+          ) : (
+            filteredAndSorted.map((item) => (
+              <View key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 mb-5">
+                <View className="relative">
+                  <Image source={{ uri: item.image }} className="w-full h-48" resizeMode="cover" />
                   <View className="absolute top-3 left-3 bg-red-600 px-3 py-1.5 rounded-xl">
-                    <Text className="text-white text-sm font-bold">{item.discount}</Text>
+                    <Text className="text-white text-sm font-bold">HOT</Text>
                   </View>
-                )}
-                <TouchableOpacity className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full">
-                  <Ionicons name="trash-outline" size={22} color="#E54B16" />
-                </TouchableOpacity>
-              </View>
-
-              <View className="p-5">
-                <Text className="text-lg font-bold text-gray-900" numberOfLines={2}>{item.name}</Text>
-                <Text className="text-gray-500 text-sm mt-1">{item.seller}</Text>
-
-                {/* Rating & Reviews / Followers */}
-                <View className="flex-row items-center mt-2">
-                  <Ionicons name="star" size={18} color="#FFD700" />
-                  <Text className="ml-1 font-bold text-gray-800">{item.rating}</Text>
-                  <Text className="text-gray-500 text-sm ml-1">
-                    ({item.type === "store" ? `${item.followers} pengikut` : `${item.reviews} ulasan`})
-                  </Text>
+                  <TouchableOpacity 
+                    className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full"
+                    onPress={() => removeFavorite(item.id)}
+                  >
+                    <Ionicons name="trash-outline" size={22} color="#E54B16" />
+                  </TouchableOpacity>
                 </View>
 
-                {/* Harga atau Info Toko */}
-                {item.type === "store" ? (
-                  <View className="flex-row items-center justify-between mt-4">
-                    <Text className="text-gray-600">{item.products} produk</Text>
-                    <TouchableOpacity>
-                      <LinearGradient colors={["#FF7733", "#FF571A"]} className="px-6 py-3 rounded-2xl">
-                        <Text className="text-white font-bold">Kunjungi Toko</Text>
-                      </LinearGradient>
-                    </TouchableOpacity>
+                <View className="p-5">
+                  <Text className="text-lg font-bold text-gray-900" numberOfLines={2}>{item.name}</Text>
+                  <Text className="text-gray-500 text-sm mt-1">{item.seller}</Text>
+
+                  {/* Rating & Reviews */}
+                  <View className="flex-row items-center mt-2">
+                    <Ionicons name="star" size={18} color="#FFD700" />
+                    <Text className="ml-1 font-bold text-gray-800">{item.rating}</Text>
+                    <Text className="text-gray-500 text-sm ml-1">
+                      ({item.sold} terjual)
+                    </Text>
                   </View>
-                ) : (
+
+                  {/* Harga */}
                   <View className="flex-row items-end justify-between mt-4">
                     <View>
-                      <Text className="text-gray-400 line-through text-sm">{item.priceBefore}</Text>
-                      <Text className="text-2xl font-extrabold text-orange-600 mt-1">{item.priceAfter}</Text>
+                      <Text className="text-2xl font-extrabold text-orange-600 mt-1">
+                        {formatPrice(item.price)}
+                      </Text>
                     </View>
                     <TouchableOpacity>
                       <LinearGradient colors={["#FF7733", "#FF571A"]} className="px-6 py-3.5 rounded-2xl flex-row items-center gap-2">
@@ -239,10 +248,10 @@ export default function Favorites() {
                       </LinearGradient>
                     </TouchableOpacity>
                   </View>
-                )}
+                </View>
               </View>
-            </View>
-          ))}
+            ))
+          )}
         </View>
       </ScrollView>
 
