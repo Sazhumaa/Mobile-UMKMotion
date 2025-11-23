@@ -1,4 +1,3 @@
-// Favorites.tsx
 import React, { useState, useMemo } from "react";
 import {
   View,
@@ -11,22 +10,25 @@ import {
   TouchableWithoutFeedback,
   Animated,
   Dimensions,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useFavorites } from "./hooks/useFavorites"; // UPDATE IMPORT
+import { useRouter } from "expo-router";
+import { useFavorites, FavoriteItem } from "./hooks/useFavorites";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function Favorites() {
-  // PAKAI USE_FAVORITES HOOK
-  const { favorites, removeFavorite } = useFavorites();
+  const { favorites, removeFavorite, clearAllFavorites } = useFavorites();
+  const router = useRouter();
   
+  // Tabs
   const [activeTab, setActiveTab] = useState<"all" | "product" | "consultant" | "store">("all");
   const [sortBy, setSortBy] = useState("newest");
 
-  // FILTER & SORT MODAL
+  // Fiter & Sort Modal
   const [filterVisible, setFilterVisible] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([1]);
   const [sortVisible, setSortVisible] = useState(false);
@@ -38,6 +40,7 @@ export default function Favorites() {
     setFilterVisible(true);
     Animated.timing(filterAnim, { toValue: 0, duration: 320, useNativeDriver: true }).start();
   };
+
   const closeFilter = () => {
     Animated.timing(filterAnim, { toValue: SCREEN_HEIGHT, duration: 280, useNativeDriver: true }).start(() => setFilterVisible(false));
   };
@@ -46,6 +49,7 @@ export default function Favorites() {
     setSortVisible(true);
     Animated.timing(sortAnim, { toValue: 0, duration: 320, useNativeDriver: true }).start();
   };
+
   const closeSort = () => {
     Animated.timing(sortAnim, { toValue: SCREEN_HEIGHT, duration: 280, useNativeDriver: true }).start(() => setSortVisible(false));
   };
@@ -63,11 +67,11 @@ export default function Favorites() {
     { id: 10, name: "Edukasi" },
   ];
 
-  // DATA FAVORIT DIAMBIL DARI CONTEXT
+  // Filter & Sort Logic
   const filteredAndSorted = useMemo(() => {
     let result = favorites;
 
-    // Filter berdasarkan tab (untuk sekarang semua dianggap product)
+    // Filter berdasarkan tab
     if (activeTab !== "all") {
       result = result.filter(i => i.type === activeTab);
     }
@@ -91,6 +95,8 @@ export default function Favorites() {
           return b.rating - a.rating;
         case "name": 
           return a.name.localeCompare(b.name);
+        case "popular": 
+          return (b.sold || 0) - (a.sold || 0);
         default: 
           return 0;
       }
@@ -103,6 +109,7 @@ export default function Favorites() {
     { key: "lowest", label: "Harga Terendah" },
     { key: "highest", label: "Harga Tertinggi" },
     { key: "rating", label: "Rating Tertinggi" },
+    { key: "popular", label: "Paling Populer" },
     { key: "name", label: "Nama A-Z" },
   ];
 
@@ -125,6 +132,177 @@ export default function Favorites() {
     return `Rp ${price.toLocaleString("id-ID")}`;
   };
 
+  // Fungsi untuk clear all favorites dengan konfirmasi
+  const handleClearAll = () => {
+    if (favorites.length === 0) return;
+    
+    Alert.alert(
+      "Hapus Semua Favorit",
+      "Apakah kamu yakin ingin menghapus semua item favorit?",
+      [
+        {
+          text: "Batal",
+          style: "cancel"
+        },
+        {
+          text: "Hapus",
+          style: "destructive",
+          onPress: () => clearAllFavorites()
+        }
+      ]
+    );
+  };
+
+  // Fungsi untuk render item berdasarkan type
+  const renderItem = (item: FavoriteItem) => {
+    switch (item.type) {
+      case "consultant":
+        return (
+          <View key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 mb-5">
+            <View className="relative">
+              <Image source={{ uri: item.image }} className="w-full h-48" resizeMode="cover" />
+              <TouchableOpacity 
+                className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full"
+                onPress={() => removeFavorite(item.id)}
+              >
+                <Ionicons name="trash-outline" size={22} color="#E54B16" />
+              </TouchableOpacity>
+            </View>
+
+            <View className="p-5">
+              <View className="flex-row items-start justify-between">
+                <View className="flex-1">
+                  <Text className="text-lg font-bold text-gray-900" numberOfLines={2}>{item.name}</Text>
+                  <Text className="text-blue-600 text-sm mt-1 font-semibold">{item.seller}</Text>
+                </View>
+                <View className="bg-blue-100 px-3 py-1 rounded-full ml-2">
+                  <Text className="text-blue-800 text-xs font-bold">KONSULTAN</Text>
+                </View>
+              </View>
+
+              <View className="flex-row items-center mt-2">
+                <Ionicons name="star" size={18} color="#FFD700" />
+                <Text className="ml-1 font-bold text-gray-800">{item.rating}</Text>
+                <Text className="text-gray-500 text-sm ml-1">({item.totalReviews} ulasan)</Text>
+              </View>
+
+              <View className="flex-row items-end justify-between mt-4">
+                <View>
+                  <Text className="text-2xl font-extrabold text-blue-600 mt-1">
+                    {formatPrice(item.price)}
+                  </Text>
+                </View>
+                <TouchableOpacity>
+                  <LinearGradient colors={["#3B82F6", "#1D4ED8"]} className="px-6 py-3.5 rounded-2xl">
+                    <Text className="text-white font-bold">Jadwalkan</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        );
+
+      case "store":
+        return (
+          <View key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 mb-5">
+            <View className="relative">
+              <Image source={{ uri: item.image }} className="w-full h-48" resizeMode="cover" />
+              <TouchableOpacity 
+                className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full"
+                onPress={() => removeFavorite(item.id)}
+              >
+                <Ionicons name="trash-outline" size={22} color="#E54B16" />
+              </TouchableOpacity>
+            </View>
+
+            <View className="p-5">
+              <View className="flex-row items-start justify-between">
+                <View className="flex-1">
+                  <Text className="text-lg font-bold text-gray-900" numberOfLines={2}>{item.name}</Text>
+                  <Text className="text-green-600 text-sm mt-1 font-semibold">{item.seller}</Text>
+                </View>
+                <View className="bg-green-100 px-3 py-1 rounded-full ml-2">
+                  <Text className="text-green-800 text-xs font-bold">TOKO</Text>
+                </View>
+              </View>
+
+              <View className="flex-row items-center mt-2">
+                <Ionicons name="star" size={18} color="#FFD700" />
+                <Text className="ml-1 font-bold text-gray-800">{item.rating}</Text>
+                <Text className="text-gray-500 text-sm ml-1">({item.totalReviews} ulasan)</Text>
+              </View>
+
+              <View className="flex-row items-center justify-between mt-4">
+                <View>
+                  <Text className="text-gray-600 font-semibold">{item.sold} produk</Text>
+                  <Text className="text-gray-500 text-sm">{item.responseRate} response rate</Text>
+                </View>
+                <TouchableOpacity>
+                  <LinearGradient colors={["#10B981", "#059669"]} className="px-6 py-3.5 rounded-2xl">
+                    <Text className="text-white font-bold">Kunjungi</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        );
+
+      default: // product
+        return (
+          <View key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 mb-5">
+            <View className="relative">
+              <Image source={{ uri: item.image }} className="w-full h-48" resizeMode="cover" />
+              <View className="absolute top-3 left-3 bg-red-600 px-3 py-1.5 rounded-xl">
+                <Text className="text-white text-sm font-bold">HOT</Text>
+              </View>
+              <TouchableOpacity 
+                className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full"
+                onPress={() => removeFavorite(item.id)}
+              >
+                <Ionicons name="trash-outline" size={22} color="#E54B16" />
+              </TouchableOpacity>
+            </View>
+
+            <View className="p-5">
+              <Text className="text-lg font-bold text-gray-900" numberOfLines={2}>{item.name}</Text>
+              <Text className="text-gray-500 text-sm mt-1">{item.seller}</Text>
+
+              <View className="flex-row items-center mt-2">
+                <Ionicons name="star" size={18} color="#FFD700" />
+                <Text className="ml-1 font-bold text-gray-800">{item.rating}</Text>
+                <Text className="text-gray-500 text-sm ml-1">({item.sold} terjual)</Text>
+              </View>
+
+              <View className="flex-row items-end justify-between mt-4">
+                <View>
+                  <Text className="text-2xl font-extrabold text-orange-600 mt-1">
+                    {formatPrice(item.price)}
+                  </Text>
+                </View>
+                <TouchableOpacity>
+                  <LinearGradient colors={["#FF7733", "#FF571A"]} className="px-6 py-3.5 rounded-2xl flex-row items-center gap-2">
+                    <Ionicons name="cart-outline" size={22} color="white" />
+                    <Text className="text-white font-bold">Keranjang</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        );
+    }
+  };
+
+  // Hitung jumlah per tab
+  const getTabCount = (tab: string) => {
+    switch (tab) {
+      case "all": return favorites.length;
+      case "product": return favorites.filter(i => i.type === "product").length;
+      case "consultant": return favorites.filter(i => i.type === "consultant").length;
+      case "store": return favorites.filter(i => i.type === "store").length;
+      default: return 0;
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -134,10 +312,20 @@ export default function Favorites() {
             <LinearGradient colors={["#FF7733", "#FF571A"]} className="w-14 h-14 rounded-2xl justify-center items-center">
               <Ionicons name="heart" size={28} color="white" />
             </LinearGradient>
-            <View className="ml-4">
+            <View className="ml-4 flex-1">
               <Text className="text-2xl font-extrabold text-gray-900">Favorit Saya</Text>
               <Text className="text-gray-500 text-base">{favorites.length} item</Text>
             </View>
+            
+            {/* Tombol Clear All */}
+            {favorites.length > 0 && (
+              <TouchableOpacity 
+                onPress={handleClearAll}
+                className="bg-red-50 px-4 py-2 rounded-2xl border border-red-200"
+              >
+                <Text className="text-red-600 font-semibold text-sm">Hapus Semua</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -145,17 +333,31 @@ export default function Favorites() {
         <View className="px-6 mt-5">
           <View className="flex-row items-center bg-gray-100 rounded-2xl px-5 py-4">
             <Ionicons name="search" size={22} color="#888" />
-            <TextInput placeholder="Cari di favorit..." className="ml-3 flex-1 text-base" placeholderTextColor="#999" />
+            <TextInput 
+              placeholder="Cari di favorit..." 
+              className="ml-3 flex-1 text-base" 
+              placeholderTextColor="#999" 
+            />
           </View>
         </View>
 
-        {/* TABS */}
+        {/* Tabs */}
         <View className="px-6 mt-6">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-            {(["all", "product"] as const).map((tab) => {
-              const count = tab === "all" ? favorites.length : favorites.filter(i => i.type === tab).length;
-              const label = tab === "all" ? "Semua" : "Produk";
-              const icon = tab === "all" ? "heart" : "cube";
+            {(["all", "product", "consultant", "store"] as const).map((tab) => {
+              const count = getTabCount(tab);
+              const labels = {
+                all: "Semua",
+                product: "Produk", 
+                consultant: "Konsultan",
+                store: "Toko"
+              };
+              const icons = {
+                all: "heart",
+                product: "cube",
+                consultant: "person",
+                store: "storefront"
+              };
 
               return (
                 <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)} className="mr-3">
@@ -163,9 +365,9 @@ export default function Favorites() {
                     colors={activeTab === tab ? ["#FF7733", "#FF571A"] : ["#e5e7eb", "#e5e7eb"]}
                     className="rounded-2xl px-5 py-3.5 flex-row items-center gap-2"
                   >
-                    <Ionicons name={icon as any} size={18} color={activeTab === tab ? "white" : "#666"} />
+                    <Ionicons name={icons[tab] as any} size={18} color={activeTab === tab ? "white" : "#666"} />
                     <Text className={`font-bold ${activeTab === tab ? "text-white" : "text-gray-700"}`}>
-                      {label} ({count})
+                      {labels[tab]} ({count})
                     </Text>
                   </LinearGradient>
                 </TouchableOpacity>
@@ -195,6 +397,7 @@ export default function Favorites() {
         <View className="px-6 mt-6 pb-20">
           <Text className="text-gray-600 mb-4">
             Menampilkan <Text className="font-bold text-orange-600">{filteredAndSorted.length}</Text> item
+            {activeTab !== "all" && ` dalam ${activeTab}`}
           </Text>
           
           {filteredAndSorted.length === 0 ? (
@@ -202,60 +405,27 @@ export default function Favorites() {
               <Ionicons name="heart-outline" size={64} color="#d1d5db" />
               <Text className="text-xl font-bold text-gray-500 mt-4">Belum ada favorit</Text>
               <Text className="text-gray-400 text-center mt-2">
-                Produk yang kamu favoritkan akan muncul di sini
+                {activeTab === "product" && "Produk yang kamu favoritkan akan muncul di sini"}
+                {activeTab === "consultant" && "Konsultan yang kamu favoritkan akan muncul di sini"}
+                {activeTab === "store" && "Toko yang kamu favoritkan akan muncul di sini"}
+                {activeTab === "all" && "Item yang kamu favoritkan akan muncul di sini"}
               </Text>
+              
+              {/* Tombol buat balik ke homepage */}
+              <TouchableOpacity 
+                className="mt-6 bg-orange-500 px-6 py-3 rounded-2xl"
+                onPress={() => router.push('/Homepage')}
+              >
+                <Text className="text-white font-bold">Jelajahi Produk</Text>
+              </TouchableOpacity>
             </View>
           ) : (
-            filteredAndSorted.map((item) => (
-              <View key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 mb-5">
-                <View className="relative">
-                  <Image source={{ uri: item.image }} className="w-full h-48" resizeMode="cover" />
-                  <View className="absolute top-3 left-3 bg-red-600 px-3 py-1.5 rounded-xl">
-                    <Text className="text-white text-sm font-bold">HOT</Text>
-                  </View>
-                  <TouchableOpacity 
-                    className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full"
-                    onPress={() => removeFavorite(item.id)}
-                  >
-                    <Ionicons name="trash-outline" size={22} color="#E54B16" />
-                  </TouchableOpacity>
-                </View>
-
-                <View className="p-5">
-                  <Text className="text-lg font-bold text-gray-900" numberOfLines={2}>{item.name}</Text>
-                  <Text className="text-gray-500 text-sm mt-1">{item.seller}</Text>
-
-                  {/* Rating & Reviews */}
-                  <View className="flex-row items-center mt-2">
-                    <Ionicons name="star" size={18} color="#FFD700" />
-                    <Text className="ml-1 font-bold text-gray-800">{item.rating}</Text>
-                    <Text className="text-gray-500 text-sm ml-1">
-                      ({item.sold} terjual)
-                    </Text>
-                  </View>
-
-                  {/* Harga */}
-                  <View className="flex-row items-end justify-between mt-4">
-                    <View>
-                      <Text className="text-2xl font-extrabold text-orange-600 mt-1">
-                        {formatPrice(item.price)}
-                      </Text>
-                    </View>
-                    <TouchableOpacity>
-                      <LinearGradient colors={["#FF7733", "#FF571A"]} className="px-6 py-3.5 rounded-2xl flex-row items-center gap-2">
-                        <Ionicons name="cart-outline" size={22} color="white" />
-                        <Text className="text-white font-bold">Keranjang</Text>
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            ))
+            filteredAndSorted.map(item => renderItem(item))
           )}
         </View>
       </ScrollView>
 
-      {/* Filter modal */}
+      {/* Filter Modal */}
       <Modal visible={filterVisible} transparent animationType="none">
         <TouchableWithoutFeedback onPress={closeFilter}>
           <View className="flex-1 bg-black/40 justify-end">
@@ -264,8 +434,13 @@ export default function Favorites() {
                 <View className="px-6 pt-6 pb-4 bg-white border-b border-gray-200">
                   <View className="flex-row justify-between items-center">
                     <Text className="text-xl font-extrabold text-gray-900">Filter Kategori</Text>
-                    <TouchableOpacity onPress={closeFilter}><Ionicons name="close" size={26} color="#999" /></TouchableOpacity>
+                    <TouchableOpacity onPress={closeFilter}>
+                      <Ionicons name="close" size={26} color="#999" />
+                    </TouchableOpacity>
                   </View>
+                  <Text className="text-gray-500 text-sm mt-1">
+                    Filter berdasarkan kategori {activeTab !== "all" && `untuk ${activeTab}`}
+                  </Text>
                 </View>
                 <View style={{ maxHeight: 380 }}>
                   <ScrollView showsVerticalScrollIndicator={false}>
@@ -295,7 +470,7 @@ export default function Favorites() {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* MODAL SORT */}
+      {/* Sort Modal */}
       <Modal visible={sortVisible} transparent animationType="none">
         <TouchableWithoutFeedback onPress={closeSort}>
           <View className="flex-1 bg-black/40 justify-end">
@@ -304,8 +479,13 @@ export default function Favorites() {
                 <View className="px-6 pt-6 pb-4 bg-white border-b border-gray-200">
                   <View className="flex-row justify-between items-center">
                     <Text className="text-xl font-extrabold text-gray-900">Urutkan Berdasarkan</Text>
-                    <TouchableOpacity onPress={closeSort}><Ionicons name="close" size={26} color="#999" /></TouchableOpacity>
+                    <TouchableOpacity onPress={closeSort}>
+                      <Ionicons name="close" size={26} color="#999" />
+                    </TouchableOpacity>
                   </View>
+                  <Text className="text-gray-500 text-sm mt-1">
+                    Urutkan {activeTab !== "all" && activeTab} favorit kamu
+                  </Text>
                 </View>
                 <View style={{ maxHeight: 380 }}>
                   <ScrollView showsVerticalScrollIndicator={false}>
@@ -313,7 +493,11 @@ export default function Favorites() {
                       {sortOptions.map((opt) => {
                         const isActive = sortBy === opt.key;
                         return (
-                          <TouchableOpacity key={opt.key} onPress={() => { setSortBy(opt.key); closeSort(); }} className="mb-4">
+                          <TouchableOpacity 
+                            key={opt.key} 
+                            onPress={() => { setSortBy(opt.key); closeSort(); }} 
+                            className="mb-4"
+                          >
                             {isActive ? (
                               <LinearGradient colors={["#FF7733", "#FF571A"]} className="px-6 py-4 rounded-full shadow-sm">
                                 <Text className="text-white font-semibold text-center">{opt.label}</Text>

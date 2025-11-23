@@ -1,4 +1,3 @@
-// data/product.ts
 export interface Product {
   id: number;
   name: string;
@@ -11,7 +10,6 @@ export interface Product {
   totalReviews: number;
   responseRate: string;
 
-  // TAMBAHAN PENTING BUAT FAVORITES
   seller: string;
   categoryId: number; // 2 = Kuliner, 4 = Fashion, dst
 }
@@ -132,3 +130,7 @@ const dataProduk: Product[] = [
 ];
 
 export default dataProduk;
+
+//instalasi nativewind
+//instalasi gestures
+//instalasi async-storage

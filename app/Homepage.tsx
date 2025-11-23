@@ -1,6 +1,6 @@
 // Homepage.tsx
 import React, { useState } from "react";
-import { usePathname, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import {
   View,
   Text,
@@ -15,13 +15,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 import dataProduk, { Product } from "./data/product";
-import { useFavorites } from "./hooks/useFavorites"; // UPDATE IMPORT
+import { useFavorites } from "./hooks/useFavorites";
 
 export default function Homepage() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<number>(1);
   
-  // PAKAI USE_FAVORITES HOOK
   const { favorites, toggleFavorite, isFavorited } = useFavorites();
 
   const router = useRouter();
@@ -41,7 +40,7 @@ export default function Homepage() {
 
   const dummyProducts = dataProduk;
 
-  // Fungsi toggle favorite yang baru
+  // Fungsi toggle favorite
   const handleToggleFavorite = (product: Product) => {
     toggleFavorite({
       id: product.id,
@@ -56,7 +55,8 @@ export default function Homepage() {
       responseRate: product.responseRate,
       seller: product.seller,
       categoryId: product.categoryId,
-      addedAt: new Date().toISOString()
+      addedAt: new Date().toISOString(),
+      type: 'product'
     });
   };
 
@@ -81,7 +81,7 @@ export default function Homepage() {
               <View className="flex-row gap-4">
                 <TouchableOpacity 
                   className="relative" 
-                  onPress={() => router.push({ pathname: "/Favorites" })}
+                  onPress={() => router.push("/Favorites")}
                 >
                   <Ionicons name="heart-outline" size={28} color="#1f2937" />
                   {favorites.length > 0 && (
@@ -91,7 +91,7 @@ export default function Homepage() {
                   )}
                 </TouchableOpacity>
                 
-                <TouchableOpacity onPress={() => router.push({ pathname: "/Cartpage" })}>
+                <TouchableOpacity onPress={() => router.push("/Cartpage")}>
                   <Ionicons name="cart-outline" size={28} color="#1f2937" />
                 </TouchableOpacity>
               </View>
@@ -128,7 +128,11 @@ export default function Homepage() {
               {categories.map((item) => {
                 const isActive = selectedCategory === item.id;
                 return (
-                  <TouchableOpacity key={item.id} activeOpacity={0.8} onPress={() => setSelectedCategory(item.id)}>
+                  <TouchableOpacity 
+                    key={item.id} 
+                    activeOpacity={0.8} 
+                    onPress={() => setSelectedCategory(item.id)}
+                  >
                     {isActive ? (
                       <LinearGradient
                         colors={["#f97316", "#ea580c"]}
@@ -233,7 +237,7 @@ export default function Homepage() {
                             </Text>
                           </View>
 
-                          {/* Tombol Like dengan toggle yang baru */}
+                          {/* Tombol Like dengan toggle */}
                           <TouchableOpacity
                             onPress={(e) => {
                               e.stopPropagation();
