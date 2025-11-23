@@ -1,4 +1,3 @@
-// Detailproduct.tsx
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { 
   View, 

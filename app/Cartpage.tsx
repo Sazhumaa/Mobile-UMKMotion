@@ -1,4 +1,3 @@
-// Cartpage.tsx
 import React, { useState, useRef } from "react";
 import {
   View,
@@ -131,7 +130,7 @@ export default function CartPage() {
     );
   };
 
-  // Calculate shipping cost (contoh sederhana)
+  // Calculate shipping cost
   const shippingCost = 15000;
   const totalAmount = getCartTotal() + shippingCost;
 

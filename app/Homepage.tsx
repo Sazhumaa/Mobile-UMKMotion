@@ -1,4 +1,3 @@
-// Homepage.tsx
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import {
@@ -16,12 +15,14 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import dataProduk, { Product } from "./data/product";
 import { useFavorites } from "./hooks/useFavorites";
+import { useCart } from "./hooks/useCart";
 
 export default function Homepage() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<number>(1);
   
   const { favorites, toggleFavorite, isFavorited } = useFavorites();
+  const { getCartItemsCount } = useCart();
 
   const router = useRouter();
 
@@ -86,13 +87,26 @@ export default function Homepage() {
                   <Ionicons name="heart-outline" size={28} color="#1f2937" />
                   {favorites.length > 0 && (
                     <View className="absolute -top-1 -right-1 bg-red-500 w-5 h-5 rounded-full justify-center items-center">
-                      <Text className="text-white text-xs font-bold">{favorites.length}</Text>
+                      <Text className="text-white text-xs font-bold text-center w-full">
+                        {favorites.length}
+                      </Text>
                     </View>
                   )}
                 </TouchableOpacity>
                 
-                <TouchableOpacity onPress={() => router.push("/Cartpage")}>
+                {/* Cart Icon dengan Counter - PERBAIKAN STYLING */}
+                <TouchableOpacity 
+                  className="relative" 
+                  onPress={() => router.push("/Cartpage")}
+                >
                   <Ionicons name="cart-outline" size={28} color="#1f2937" />
+                  {getCartItemsCount() > 0 && (
+                    <View className="absolute -top-1 -right-1 bg-red-500 w-5 h-5 rounded-full justify-center items-center">
+                      <Text className="text-white text-xs font-bold text-center w-full">
+                        {getCartItemsCount() > 99 ? '99+' : getCartItemsCount()}
+                      </Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
               </View>
             </View>

@@ -1,4 +1,3 @@
-// hooks/useCart.ts
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
