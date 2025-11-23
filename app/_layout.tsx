@@ -1,9 +1,11 @@
+// app/_layout.tsx
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import "../global.css";
 import { FavoritesProvider } from './hooks/useFavorites';
+import { CartProvider } from './hooks/useCart'; // TAMBAH INI
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export const unstable_settings = {
@@ -15,16 +17,20 @@ export default function RootLayout() {
 
   return (
     <FavoritesProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-          <Stack.Screen name="pokemon" options={{ headerShown: false }} />
-          <Stack.Screen name="Homepage" options={{ headerShown: false }} />
-          <Stack.Screen name="Favorites" options={{ headerShown: false }} />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <CartProvider> {/* TAMBAH INI */}
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+            <Stack.Screen name="pokemon" options={{ headerShown: false }} />
+            <Stack.Screen name="Homepage" options={{ headerShown: false }} />
+            <Stack.Screen name="Favorites" options={{ headerShown: false }} />
+            <Stack.Screen name="Detailproduct" options={{ headerShown: false }} />
+            <Stack.Screen name="Cartpage" options={{ headerShown: false }} />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </CartProvider> {/* TAMBAH INI */}
     </FavoritesProvider>
   );
 }
