@@ -134,3 +134,5 @@ export default dataProduk;
 //instalasi nativewind
 //instalasi gestures
 //instalasi async-storage
+// instalasi react-navigation dependencies
+// instalasi react-navigation navigators

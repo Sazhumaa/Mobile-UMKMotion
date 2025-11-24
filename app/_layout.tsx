@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import "../global.css";
 import { FavoritesProvider } from './hooks/useFavorites';
-import { CartProvider } from './hooks/useCart'; // TAMBAH INI
+import { CartProvider } from './hooks/useCart';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export const unstable_settings = {
@@ -29,7 +29,7 @@ export default function RootLayout() {
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>
-      </CartProvider> {/* TAMBAH INI */}
+      </CartProvider>
     </FavoritesProvider>
   );
 }

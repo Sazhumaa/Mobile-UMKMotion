@@ -13,9 +13,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
-import dataProduk, { Product } from "./data/product";
-import { useFavorites } from "./hooks/useFavorites";
-import { useCart } from "./hooks/useCart";
+import dataProduk, { Product } from "../data/product";
+import { useFavorites } from "../hooks/useFavorites";
+import { useCart } from "../hooks/useCart";
 
 export default function Homepage() {
   const [search, setSearch] = useState("");
@@ -71,7 +71,7 @@ export default function Homepage() {
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center space-x-4">
                 <Image
-                  source={require("../assets/images/Profile.jpg")}
+                  source={require("../../assets/images/Profile.jpg")}
                   className="max-w-14 max-h-14 rounded-full border-2 border-indigo-100"
                 />
                 <View>
