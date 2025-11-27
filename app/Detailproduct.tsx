@@ -348,7 +348,7 @@ export default function Detailproduk() {
                 <Text style={{color: "#6b7280"}}>Aktif beberapa menit lalu</Text>
               </View>
 
-              <TouchableOpacity style={{backgroundColor: "#f97316", paddingHorizontal: 24, paddingVertical: 16, borderRadius: 8}}>
+              <TouchableOpacity style={{backgroundColor: "#f97316", paddingHorizontal: 24, paddingVertical: 16, borderRadius: 8}} onPress={( ) => router.push("/Toko")}>
                 <Text style={{color: "white", fontWeight: "600"}}>Lihat Toko 🏬</Text>
               </TouchableOpacity>
             </View>
