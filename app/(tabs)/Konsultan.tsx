@@ -17,7 +17,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
-import { useFavorites } from "../hooks/useFavorites";
+import { useFavorites, createConsultantFavorite } from "../hooks/useFavorites";
 import { useCart } from "../hooks/useCart";
 
 // Define types
@@ -61,7 +61,16 @@ export default function Konsultan() {
   const [selectedSpesialis, setSelectedSpesialis] = useState("Semua Spesialisasi");
   const [sortBy, setSortBy] = useState("Rating Tertinggi");
 
-  const { favorites } = useFavorites();
+  // Use improved favorites hook
+  const { 
+    favorites, 
+    toggleFavorite, 
+    isFavorite, 
+    getFavoritesCount,
+    getFavoritesByType,
+    isLoading: favoritesLoading 
+  } = useFavorites();
+  
   const { getCartItemsCount } = useCart();
 
   const konsultanList: KonsultanType[] = [
@@ -211,6 +220,32 @@ export default function Konsultan() {
 
   const hasActiveFilter = selectedSpesialis !== "Semua Spesialisasi" || sortBy !== "Rating Tertinggi";
 
+  // Helper function untuk check favorite dengan type
+  const checkIsFavorite = (konsultanId: number) => {
+    return isFavorite(konsultanId, 'consultant');
+  };
+
+  // Improved toggle favorite function dengan utility function
+  const handleToggleFavorite = async (konsultan: KonsultanType) => {
+    try {
+      const favoriteData = createConsultantFavorite(konsultan);
+      await toggleFavorite(favoriteData);
+      
+      // Beri feedback ke user
+      if (checkIsFavorite(konsultan.id)) {
+        Alert.alert("❤️ Berhasil", `${konsultan.name} ditambahkan ke favorit`);
+      } else {
+        Alert.alert("💔 Berhasil", `${konsultan.name} dihapus dari favorit`);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      Alert.alert("Error", "Gagal mengupdate favorit");
+    }
+  };
+
+  // Get favorite consultants count for display
+  const favoriteConsultantsCount = getFavoritesByType('consultant').length;
+
   const handleFilterToggle = () => {
     if (!showFilter) {
       setShowFilter(true);
@@ -348,7 +383,7 @@ Temukan konsultan UMKM profesional lainnya di aplikasi kami!`;
     ],
   };
 
-  // Modal Detail Konsultan
+  // Modal Detail Konsultan dengan improved favorite integration
   const renderDetailModal = () => (
     <Modal
       visible={showDetailModal}
@@ -359,9 +394,21 @@ Temukan konsultan UMKM profesional lainnya di aplikasi kami!`;
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-row items-center justify-between p-6 border-b border-gray-200">
           <Text className="text-xl font-bold text-gray-800">Detail Konsultan</Text>
-          <TouchableOpacity onPress={() => setShowDetailModal(false)}>
-            <Ionicons name="close" size={28} color="#6b7280" />
-          </TouchableOpacity>
+          <View className="flex-row items-center">
+            <TouchableOpacity 
+              onPress={() => selectedKonsultan && handleToggleFavorite(selectedKonsultan)}
+              className="p-2 mr-2"
+            >
+              <Ionicons 
+                name={selectedKonsultan && checkIsFavorite(selectedKonsultan.id) ? "heart" : "heart-outline"} 
+                size={28} 
+                color={selectedKonsultan && checkIsFavorite(selectedKonsultan.id) ? "#ff3b30" : "#6b7280"} 
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowDetailModal(false)}>
+              <Ionicons name="close" size={28} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView className="flex-1 p-6">
@@ -588,7 +635,6 @@ Temukan konsultan UMKM profesional lainnya di aplikasi kami!`;
                 className="items-center"
                 onPress={() => {
                   setShowShareModal(false);
-                  // Simpan ke clipboard atau action lainnya
                   Alert.alert("Berhasil!", "Link konsultan disalin ke clipboard");
                 }}
               >
@@ -602,7 +648,6 @@ Temukan konsultan UMKM profesional lainnya di aplikasi kami!`;
                 className="items-center"
                 onPress={() => {
                   setShowShareModal(false);
-                  // Action untuk WhatsApp
                   Alert.alert("Info", "Fitur WhatsApp akan segera tersedia");
                 }}
               >
@@ -625,6 +670,95 @@ Temukan konsultan UMKM profesional lainnya di aplikasi kami!`;
     </Modal>
   );
 
+  // Render item konsultan dengan improved favorite integration
+  const renderKonsultanItem = (konsultan: KonsultanType) => {
+    const isFav = checkIsFavorite(konsultan.id);
+    
+    return (
+      <View 
+        key={konsultan.id} 
+        className="border border-orange-600 rounded-2xl overflow-hidden bg-white shadow-sm mb-5"
+      >
+        <View className="p-5 flex-row items-center">
+          <Image source={konsultan.foto} className="max-w-16 max-h-16 rounded-xl border-2 border-indigo-100" />
+          <View className="ml-4 flex-1">
+            <Text className="text-lg font-bold text-gray-800">{konsultan.name}</Text>
+            <Text className="text-gray-500 text-sm">{konsultan.spesialis}</Text>
+            <Text className="text-orange-500 font-bold mt-2">{konsultan.harga}</Text>
+          </View>
+          <View className="flex-row gap-3">
+            <TouchableOpacity 
+              className={`p-2 border rounded-xl active:opacity-70 ${
+                isFav ? "border-red-300 bg-red-50" : "border-gray-300 bg-white"
+              }`}
+              onPress={() => handleToggleFavorite(konsultan)}
+            >
+              <Ionicons 
+                name={isFav ? "heart" : "heart-outline"} 
+                size={26} 
+                color={isFav ? "#ff3b30" : "#1f2937"} 
+              />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              className="p-2 border border-gray-300 rounded-xl active:bg-gray-100"
+              onPress={() => handleOpenShareModal(konsultan)}
+            >
+              <Ionicons name="share-outline" size={26} color="#1f2937" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View className="flex-row justify-between items-center px-5 mb-3">
+          <View className="flex-row items-center bg-orange-50 border border-orange-200 rounded-lg py-2 px-4">
+            <Ionicons name="star" size={18} color="#f59e0b" />
+            <Text className="ml-2 font-bold text-orange-700">{konsultan.rating}</Text>
+            <Text className="ml-1 text-xs text-orange-600">({konsultan.totalUlasan})</Text>
+          </View>
+          <View className="flex-row items-center">
+            <Ionicons name="briefcase-outline" size={18} color="#6b7280" />
+            <Text className="ml-2 font-semibold text-gray-700">{konsultan.pengalaman}</Text>
+          </View>
+        </View>
+
+        <View className="flex-row justify-between items-center px-5 mb-3">
+          <View className="flex-row items-center bg-blue-50 border border-blue-200 rounded-lg py-2 px-4">
+            <Ionicons name="people-outline" size={18} color="#2563eb" />
+            <Text className="ml-2 font-bold text-blue-700">{konsultan.totalKlien}+ Klien</Text>
+          </View>
+          <View className="flex-row items-center">
+            <Ionicons name="time-outline" size={18} color="#16a34a" />
+            <Text className="ml-2 font-semibold text-green-700">{konsultan.kecepatanRespons}</Text>
+          </View>
+        </View>
+
+        <View className="flex-row justify-between items-center px-5 mb-4">
+          <View className="flex-row items-center">
+            <Ionicons name="location-outline" size={18} color="#ef4444" />
+            <Text className="ml-2 text-gray-600 font-medium">{konsultan.lokasi}</Text>
+          </View>
+          <Text className="text-xs text-gray-500">{konsultan.totalJamKonsultasi} konsultasi</Text>
+        </View>
+
+        <View className="px-5 pb-5">
+          <View className="flex-row space-x-3">
+            <TouchableOpacity 
+              onPress={() => handleStartChat(konsultan)}
+              className="flex-1 bg-orange-500 py-4 rounded-xl items-center active:bg-orange-600 active:scale-95"
+            >
+              <Text className="text-white font-bold text-base">Chat Sekarang</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => handleShowDetail(konsultan)}
+              className="flex-1 border-2 border-orange-500 py-4 rounded-xl items-center bg-white active:bg-orange-50 active:scale-95"
+            >
+              <Text className="text-orange-500 font-bold text-base">Lihat Detail</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
@@ -633,6 +767,7 @@ Temukan konsultan UMKM profesional lainnya di aplikasi kami!`;
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        className="flex-1"
       >
         {/* Header */}
         <View className="bg-white px-6 pt-4 pb-6 shadow-sm">
@@ -644,7 +779,7 @@ Temukan konsultan UMKM profesional lainnya di aplikasi kami!`;
               />
               <View>
                 <Text className="text-2xl font-bold text-gray-800">Halo, Elaina!</Text>
-                <Text className="text-gray-500">Selamat berbelanja lagi bro</Text>
+                <Text className="text-gray-500">Temukan konsultan terbaik untuk UMKM Anda</Text>
               </View>
             </View>
 
@@ -811,85 +946,19 @@ Temukan konsultan UMKM profesional lainnya di aplikasi kami!`;
 
           {/* Daftar Konsultan */}
           <View className="mt-8 mb-10">
-            <Text className="text-gray-700 font-medium text-base">
-              Menampilkan {filteredAndSortedList.length} dari {konsultanList.length} konsultan
-            </Text>
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-gray-700 font-medium text-base">
+                Menampilkan {filteredAndSortedList.length} dari {konsultanList.length} konsultan
+              </Text>
+              {favoriteConsultantsCount > 0 && (
+                <Text className="text-orange-600 font-semibold text-sm">
+                  {favoriteConsultantsCount} favorit
+                </Text>
+              )}
+            </View>
 
             <View className="mt-6 space-y-5 mb-10">
-              {filteredAndSortedList.map((konsultan) => (
-                <View 
-                  key={konsultan.id} 
-                  className="border border-orange-600 rounded-2xl overflow-hidden bg-white shadow-sm"
-                >
-                  <View className="p-5 flex-row items-center">
-                    <Image source={konsultan.foto} className="max-w-16 max-h-16 rounded-xl border-2 border-indigo-100" />
-                    <View className="ml-4 flex-1">
-                      <Text className="text-lg font-bold text-gray-800">{konsultan.name}</Text>
-                      <Text className="text-gray-500 text-sm">{konsultan.spesialis}</Text>
-                      <Text className="text-orange-500 font-bold mt-2">{konsultan.harga}</Text>
-                    </View>
-                    <View className="flex-row gap-3">
-                      <TouchableOpacity className="p-2 border border-gray-300 rounded-xl active:bg-gray-100">
-                        <Ionicons name="heart-outline" size={26} color="#1f2937" />
-                      </TouchableOpacity>
-                      <TouchableOpacity 
-                        className="p-2 border border-gray-300 rounded-xl active:bg-gray-100"
-                        onPress={() => handleOpenShareModal(konsultan)}
-                      >
-                        <Ionicons name="share-outline" size={26} color="#1f2937" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  <View className="flex-row justify-between items-center px-5 mb-3">
-                    <View className="flex-row items-center bg-orange-50 border border-orange-200 rounded-lg py-2 px-4">
-                      <Ionicons name="star" size={18} color="#f59e0b" />
-                      <Text className="ml-2 font-bold text-orange-700">{konsultan.rating}</Text>
-                      <Text className="ml-1 text-xs text-orange-600">({konsultan.totalUlasan})</Text>
-                    </View>
-                    <View className="flex-row items-center">
-                      <Ionicons name="briefcase-outline" size={18} color="#6b7280" />
-                      <Text className="ml-2 font-semibold text-gray-700">{konsultan.pengalaman}</Text>
-                    </View>
-                  </View>
-
-                  <View className="flex-row justify-between items-center px-5 mb-3">
-                    <View className="flex-row items-center bg-blue-50 border border-blue-200 rounded-lg py-2 px-4">
-                      <Ionicons name="people-outline" size={18} color="#2563eb" />
-                      <Text className="ml-2 font-bold text-blue-700">{konsultan.totalKlien}+ Klien</Text>
-                    </View>
-                    <View className="flex-row items-center">
-                      <Ionicons name="time-outline" size={18} color="#16a34a" />
-                      <Text className="ml-2 font-semibold text-green-700">{konsultan.kecepatanRespons}</Text>
-                    </View>
-                  </View>
-
-                  <View className="flex-row justify-between items-center px-5 mb-4">
-                    <View className="flex-row items-center">
-                      <Ionicons name="location-outline" size={18} color="#ef4444" />
-                      <Text className="ml-2 text-gray-600 font-medium">{konsultan.lokasi}</Text>
-                    </View>
-                    <Text className="text-xs text-gray-500">{konsultan.totalJamKonsultasi} konsultasi</Text>
-                  </View>
-
-                  <View className="px-5 pb-5 mb-5">
-                    <View className="flex-row space-x-3">
-                      <TouchableOpacity 
-                        onPress={() => handleStartChat(konsultan)}
-                        className="flex-1 bg-orange-500 py-4 rounded-xl items-center active:bg-orange-600 active:scale-95"
-                      >
-                        <Text className="text-white font-bold text-base">Chat Sekarang</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity 
-                        onPress={() => handleShowDetail(konsultan)}
-                        className="flex-1 border-2 border-orange-500 py-4 rounded-xl items-center bg-white active:bg-orange-50 active:scale-95"
-                      >
-                        <Text className="text-orange-500 font-bold text-base">Lihat Detail</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              ))}
+              {filteredAndSortedList.map(renderKonsultanItem)}
             </View>
           </View>
         </View>

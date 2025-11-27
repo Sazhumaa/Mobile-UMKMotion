@@ -21,7 +21,7 @@ export default function Homepage() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<number>(1);
   
-  const { favorites, toggleFavorite, isFavorited } = useFavorites();
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const { getCartItemsCount } = useCart();
 
   const router = useRouter();
@@ -41,9 +41,14 @@ export default function Homepage() {
 
   const dummyProducts = dataProduk;
 
-  // Fungsi toggle favorite
-  const handleToggleFavorite = (product: Product) => {
-    toggleFavorite({
+  // Helper function untuk check favorite dengan type
+  const checkIsFavorite = (productId: number) => {
+    return isFavorite(productId, 'product');
+  };
+
+  // Utility function untuk product
+  const createProductFavorite = (product: Product) => {
+    return {
       id: product.id,
       name: product.name,
       price: product.price,
@@ -56,9 +61,14 @@ export default function Homepage() {
       responseRate: product.responseRate,
       seller: product.seller,
       categoryId: product.categoryId,
-      addedAt: new Date().toISOString(),
-      type: 'product'
-    });
+      type: 'product' as const
+    };
+  };
+
+  // Fungsi toggle favorite yang diperbaiki
+  const handleToggleFavorite = (product: Product) => {
+    const favoriteData = createProductFavorite(product);
+    toggleFavorite(favoriteData);
   };
 
   return (
@@ -94,7 +104,7 @@ export default function Homepage() {
                   )}
                 </TouchableOpacity>
                 
-                {/* Cart Icon dengan Counter - PERBAIKAN STYLING */}
+                {/* Cart Icon dengan Counter */}
                 <TouchableOpacity 
                   className="relative" 
                   onPress={() => router.push("/Cartpage")}
@@ -199,7 +209,7 @@ export default function Homepage() {
 
             <View className="flex-row flex-wrap justify-between">
               {dummyProducts.map((product) => {
-                const liked = isFavorited(product.id);
+                const liked = checkIsFavorite(product.id);
 
                 return (
                   <TouchableOpacity
