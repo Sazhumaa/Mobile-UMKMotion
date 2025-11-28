@@ -13,13 +13,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
-import dataProduk, { Product } from "../data/product";
+import dataProduk from "../data/product";
 import { useFavorites } from "../hooks/useFavorites";
 import { useCart } from "../hooks/useCart";
 
 export default function Homepage() {
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<number>(1);
+  const [selectedCategory, setSelectedCategory] = useState(1);
   
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const { getCartItemsCount } = useCart();
@@ -39,7 +39,10 @@ export default function Homepage() {
     { id: 10, name: "Edukasi", icon: "school-outline" },
   ];
 
-  const dummyProducts = dataProduk;
+  // Filter produk berdasarkan kategori
+  const filteredProducts = selectedCategory === 1 
+    ? dataProduk 
+    : dataProduk.filter(product => product.categoryId === selectedCategory);
 
   // Helper function untuk check favorite dengan type
   const checkIsFavorite = (productId: number) => {
@@ -47,7 +50,7 @@ export default function Homepage() {
   };
 
   // Utility function untuk product
-  const createProductFavorite = (product: Product) => {
+  const createProductFavorite = (product: any) => {
     return {
       id: product.id,
       name: product.name,
@@ -66,9 +69,33 @@ export default function Homepage() {
   };
 
   // Fungsi toggle favorite yang diperbaiki
-  const handleToggleFavorite = (product: Product) => {
+  const handleToggleFavorite = (product: any) => {
     const favoriteData = createProductFavorite(product);
     toggleFavorite(favoriteData);
+  };
+
+  // Navigasi ke halaman toko
+  const navigateToStore = (product: any) => {
+    router.push({
+      pathname: "/Toko",
+      params: { 
+        storeName: product.seller
+      }
+    });
+  };
+
+  // Navigasi ke detail produk - convert boolean ke string untuk params
+  const navigateToDetail = (product: any) => {
+    const params = {
+      ...product,
+      storeIsOfficial: product.storeIsOfficial ? "true" : "false",
+      storeIsPowerMerchant: product.storeIsPowerMerchant ? "true" : "false"
+    };
+    
+    router.push({
+      pathname: "/Detailproduct",
+      params: params,
+    });
   };
 
   return (
@@ -201,14 +228,16 @@ export default function Homepage() {
           {/* Produk */}
           <View className="px-6 pb-10">
             <View className="flex-row items-center justify-between mb-6">
-              <Text className="text-2xl font-bold text-gray-800">Produk Terbaru</Text>
+              <Text className="text-2xl font-bold text-gray-800">
+                {selectedCategory === 1 ? 'Produk Terbaru' : `Produk ${categories.find(cat => cat.id === selectedCategory)?.name}`}
+              </Text>
               <TouchableOpacity>
                 <Text className="text-indigo-600 font-semibold">Lihat Semua</Text>
               </TouchableOpacity>
             </View>
 
             <View className="flex-row flex-wrap justify-between">
-              {dummyProducts.map((product) => {
+              {filteredProducts.map((product) => {
                 const liked = checkIsFavorite(product.id);
 
                 return (
@@ -216,12 +245,7 @@ export default function Homepage() {
                     key={product.id}
                     activeOpacity={0.8}
                     className="w-[48%] mb-6"
-                    onPress={() =>
-                      router.push({
-                        pathname: "/Detailproduct",
-                        params: { ...product },
-                      })
-                    }
+                    onPress={() => navigateToDetail(product)}
                   >
                     <View className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 h-full flex flex-col">
                       <View className="relative">
@@ -248,6 +272,37 @@ export default function Homepage() {
                           <Text className="text-2xl font-black text-orange-500 mt-3">
                             Rp {product.price.toLocaleString("id-ID")}
                           </Text>
+
+                          {/* Info Toko - Bagian Baru */}
+                          <TouchableOpacity 
+                            className="mt-3 flex-row items-center"
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              navigateToStore(product);
+                            }}
+                          >
+                            <View className="w-6 h-6 bg-gray-200 rounded-full items-center justify-center mr-2">
+                              <Text className="text-xs font-bold text-gray-600">
+                                {product.seller.charAt(0)}
+                              </Text>
+                            </View>
+                            <View className="flex-1">
+                              <Text className="text-sm text-gray-600 font-medium" numberOfLines={1}>
+                                {product.seller}
+                              </Text>
+                              <View className="flex-row items-center mt-1">
+                                <Ionicons name="star" size={12} color="#F59E0B" />
+                                <Text className="text-xs text-gray-500 ml-1">
+                                  {product.storeRating} • {product.storeLocation}
+                                </Text>
+                              </View>
+                            </View>
+                            {product.storeIsOfficial && (
+                              <View className="bg-blue-500 px-2 py-1 rounded">
+                                <Text className="text-white text-xs">Official</Text>
+                              </View>
+                            )}
+                          </TouchableOpacity>
                         </View>
 
                         <View className="flex-row items-center justify-between mt-4 pt-2 border-t border-gray-100">

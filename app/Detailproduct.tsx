@@ -6,13 +6,14 @@ import {
   ScrollView, 
   TextInput, 
   TouchableOpacity, 
-  FlatList,
+  TextInput as RNTextInput,
   Alert,
   Animated
 } from "react-native";
 import { useState, useRef, useEffect } from "react";
 import dataProduk from "./data/product";
 import { useCart } from "./hooks/useCart";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Detailproduk() {
   const params = useLocalSearchParams();
@@ -44,8 +45,22 @@ export default function Detailproduk() {
     totalReviews, 
     responseRate,
     seller,
-    categoryId
+    categoryId,
+    // Field toko baru
+    storeDescription,
+    storeJoinDate,
+    storeTotalProducts,
+    storeFollowers,
+    storeLocation,
+    storeIsOfficial,
+    storeIsPowerMerchant,
+    storeBadge,
+    storeResponseTime,
+    storePerformance
   } = params;
+
+  // Cari data produk lengkap dari dataProduk berdasarkan ID
+  const fullProductData = dataProduk.find(product => product.id === Number(id));
 
   // Generate rekomendasi sekali saja berdasarkan categoryId
   useEffect(() => {
@@ -84,7 +99,7 @@ export default function Detailproduk() {
     
     // Potong maksimal 10 produk
     setRekomendasi(recommendedProducts.slice(0, 10));
-  }, [id, categoryId]); // Hanya regenerate ketika id atau categoryId berubah
+  }, [id, categoryId]);
 
   // Cleanup timeout ketika component unmount
   useEffect(() => {
@@ -94,6 +109,26 @@ export default function Detailproduk() {
       }
     };
   }, []);
+
+  // Navigasi ke halaman toko
+  const navigateToStore = () => {
+    if (fullProductData) {
+      router.push({
+        pathname: "/Toko",
+        params: { 
+          storeName: fullProductData.seller
+        }
+      });
+    } else {
+      // Fallback jika fullProductData tidak ditemukan
+      router.push({
+        pathname: "/Toko",
+        params: { 
+          storeName: seller as string || "Batagor Ibu Eni"
+        }
+      });
+    }
+  };
 
   // Handle quantity changes
   const decreaseQuantity = () => {
@@ -302,7 +337,7 @@ export default function Detailproduk() {
             <Text style={{fontSize: 20, fontWeight: "bold"}}>-</Text>
           </TouchableOpacity>
 
-          <TextInput 
+          <RNTextInput 
             style={{backgroundColor: "white", padding: 8, borderRadius: 8, width: 56, textAlign: "center", fontSize: 18, borderWidth: 1}}
             value={quantity.toString()}
             keyboardType="numeric"
@@ -339,96 +374,163 @@ export default function Detailproduk() {
           </TouchableOpacity>
         </View>
         
-        {/* Store Info */}
+        {/* Store Info - Diperbarui dengan data toko lengkap */}
         <View style={{marginTop: 24}}>
           <View style={{borderRadius: 16, padding: 24, borderWidth: 1, borderColor: 'rgba(0, 0, 0, 0.2)', backgroundColor: "white"}}>
-            <View style={{flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
-              <View>
-                <Text style={{fontWeight: "bold", fontSize: 18}}>{seller || "Nusantara Rasa"}</Text>
-                <Text style={{color: "#6b7280"}}>Aktif beberapa menit lalu</Text>
+            {/* Header Toko */}
+            <View style={{flexDirection: "row", alignItems: "center", marginBottom: 16}}>
+              <View className="w-12 h-12 bg-gray-200 rounded-full items-center justify-center mr-3">
+                <Text className="text-lg font-bold text-gray-600">
+                  {(seller as string)?.charAt(0) || "B"}
+                </Text>
               </View>
+              <View style={{flex: 1}}>
+                <Text style={{fontWeight: "bold", fontSize: 18}}>{seller || "Batagor Ibu Eni"}</Text>
+                <Text style={{color: "#6b7280"}}>{storeLocation as string || "Bandung, Jawa Barat"}</Text>
+              </View>
+              {fullProductData?.storeIsOfficial && (
+                <View className="bg-blue-500 px-2 py-1 rounded-full">
+                  <Text className="text-white text-xs font-medium">Official</Text>
+                </View>
+              )}
+            </View>
 
-              <TouchableOpacity style={{backgroundColor: "#f97316", paddingHorizontal: 24, paddingVertical: 16, borderRadius: 8}} onPress={( ) => router.push("/Toko")}>
-                <Text style={{color: "white", fontWeight: "600"}}>Lihat Toko 🏬</Text>
-              </TouchableOpacity>
+            {/* Badge Toko */}
+            <View style={{flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16}}>
+              <View className="bg-orange-100 px-3 py-1 rounded-full">
+                <Text className="text-orange-600 text-xs font-medium">
+                  {fullProductData?.storeBadge || "Power Merchant"}
+                </Text>
+              </View>
+              {fullProductData?.storeIsPowerMerchant && (
+                <View className="bg-green-100 px-3 py-1 rounded-full">
+                  <Text className="text-green-600 text-xs font-medium">Power Merchant</Text>
+                </View>
+              )}
             </View>
             
-            <View style={{flexDirection: "row", justifyContent: "space-between", marginTop: 24, paddingHorizontal: 8}}>
+            {/* Stats Toko */}
+            <View style={{flexDirection: "row", justifyContent: "space-between", marginBottom: 16, paddingHorizontal: 8}}>
               <View style={{alignItems: "center", flex: 1}}>
-                <Text style={{color: "#374151", fontSize: 16, fontWeight: "600"}}>⭐ {storeRating || "4.8"}</Text>
+                <Text style={{color: "#374151", fontSize: 16, fontWeight: "600"}}>
+                  ⭐ {storeRating || fullProductData?.storeRating || "4.8"}
+                </Text>
                 <Text style={{color: "#6b7280", fontSize: 14}}>Rating Toko</Text>
               </View>
 
               <View style={{alignItems: "center", flex: 1}}>
-                <Text style={{color: "#374151", fontSize: 16, fontWeight: "600"}}>{totalReviews || "3400"}+</Text>
-                <Text style={{color: "#6b7280", fontSize: 14}}>Total Review</Text>
+                <Text style={{color: "#374151", fontSize: 16, fontWeight: "600"}}>
+                  {storeTotalProducts || fullProductData?.storeTotalProducts || "12"}
+                </Text>
+                <Text style={{color: "#6b7280", fontSize: 14}}>Produk</Text>
               </View>
 
               <View style={{alignItems: "center", flex: 1}}>
-                <Text style={{color: "#374151", fontSize: 16, fontWeight: "600"}}>{responseRate || "98%"}</Text>
-                <Text style={{color: "#6b7280", fontSize: 14}}>Response Rate</Text>
+                <Text style={{color: "#374151", fontSize: 16, fontWeight: "600"}}>
+                  {storeFollowers ? Number(storeFollowers).toLocaleString() : fullProductData?.storeFollowers.toLocaleString() || "12.5K"}
+                </Text>
+                <Text style={{color: "#6b7280", fontSize: 14}}>Followers</Text>
               </View>
+            </View>
+
+            {/* Tombol Lihat Toko */}
+            <View style={{flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
+              <View style={{flex: 1}}>
+                <Text style={{color: "#6b7280", fontSize: 12}}>
+                  Bergabung {storeJoinDate || fullProductData?.storeJoinDate || "15 Mar 2015"}
+                </Text>
+              </View>
+              
+              <TouchableOpacity 
+                style={{
+                  backgroundColor: "#f97316", 
+                  paddingHorizontal: 24, 
+                  paddingVertical: 12, 
+                  borderRadius: 8,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8
+                }} 
+                onPress={navigateToStore}
+              >
+                <Ionicons name="storefront-outline" size={16} color="white" />
+                <Text style={{color: "white", fontWeight: "600"}}>Kunjungi Toko</Text>
+              </TouchableOpacity>
             </View>
           </View>
           
           {/* Recommended Products */}
           <View style={{marginTop: 24}}>
-            <Text style={{fontWeight: "bold", fontSize: 20}}>Rekomendasi Produk</Text>
+            <Text style={{fontWeight: "bold", fontSize: 20, marginBottom: 12}}>Rekomendasi Produk</Text>
             
-            <View>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={{ marginTop: 12 }}
-                contentContainerStyle={{ paddingVertical: 4, paddingLeft: 2 }}
-              >
-                {rekomendasi.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    activeOpacity={0.92}
-                    onPress={() =>
-                      router.push({ pathname: "/Detailproduct", params: { ...item } })
-                    }
-                    style={{width: 176, marginRight: 16, backgroundColor: "white", borderRadius: 16, padding: 12, overflow: "hidden", position: "relative", 
-                      shadowColor: "#000",
-                      shadowOffset: {
-                        width: 0,
-                        height: 1,
-                      },
-                      shadowOpacity: 0.2,
-                      shadowRadius: 1.41,
-                      elevation: 2,
-                    }}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginTop: 12 }}
+              contentContainerStyle={{ paddingVertical: 4, paddingLeft: 2 }}
+            >
+              {rekomendasi.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  activeOpacity={0.92}
+                  onPress={() =>
+                    router.push({ pathname: "/Detailproduct", params: { ...item } })
+                  }
+                  style={{
+                    width: 176, 
+                    marginRight: 16, 
+                    backgroundColor: "white", 
+                    borderRadius: 16, 
+                    padding: 12, 
+                    overflow: "hidden", 
+                    position: "relative", 
+                    shadowColor: "#000",
+                    shadowOffset: {
+                      width: 0,
+                      height: 1,
+                    },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 1.41,
+                    elevation: 2,
+                  }}
+                >
+                  <View style={{
+                    position: "absolute", 
+                    top: 12, 
+                    left: 12, 
+                    backgroundColor: "#ef4444", 
+                    paddingHorizontal: 8, 
+                    paddingVertical: 4, 
+                    borderRadius: 12, 
+                    zIndex: 10
+                  }}>
+                    <Text style={{fontSize: 12, fontWeight: "bold", color: "white"}}>HOT</Text>
+                  </View>
+
+                  <Image
+                    source={{ uri: item.image }}
+                    style={{ width: "100%", height: 150, borderRadius: 8, backgroundColor: "#e5e7eb" }}
+                    resizeMode="cover"
+                  />
+
+                  <Text
+                    numberOfLines={2}
+                    style={{fontWeight: "bold", fontSize: 14, color: "#1f2937", marginTop: 12}}
                   >
-                    <View style={{position: "absolute", top: 12, left: 12, backgroundColor: "#ef4444", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, zIndex: 10}}>
-                      <Text style={{fontSize: 12, fontWeight: "bold", color: "white"}}>HOT</Text>
-                    </View>
+                    {item.name}
+                  </Text>
 
-                    <Image
-                      source={{ uri: item.image }}
-                      style={{ width: "100%", height: 150, borderRadius: 8, backgroundColor: "#e5e7eb" }}
-                      resizeMode="cover"
-                    />
+                  <Text style={{color: "#f97316", fontWeight: "800", fontSize: 16, marginTop: 4}}>
+                    Rp {Number(item.price).toLocaleString("id-ID")}
+                  </Text>
 
-                    <Text
-                      numberOfLines={2}
-                      style={{fontWeight: "bold", fontSize: 14, color: "#1f2937", marginTop: 12}}
-                    >
-                      {item.name}
-                    </Text>
-
-                    <Text style={{color: "#f97316", fontWeight: "800", fontSize: 16, marginTop: 4}}>
-                      Rp {Number(item.price).toLocaleString("id-ID")}
-                    </Text>
-
-                    <View style={{flexDirection: "row", alignItems: "center", marginTop: 8}}>
-                      <Text style={{color: "#fbbf24", fontWeight: "bold", marginRight: 8}}>⭐{item.rating} </Text>
-                      <Text style={{color: "#6b7280", fontSize: 12}}>{item.sold} • terjual</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
+                  <View style={{flexDirection: "row", alignItems: "center", marginTop: 8}}>
+                    <Text style={{color: "#fbbf24", fontWeight: "bold", marginRight: 8}}>⭐{item.rating} </Text>
+                    <Text style={{color: "#6b7280", fontSize: 12}}>{item.sold} • terjual</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
         </View>
       </ScrollView>

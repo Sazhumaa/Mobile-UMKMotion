@@ -1,20 +1,4 @@
-export interface Product {
-  id: number;
-  name: string;
-  price: number;
-  rating: number;
-  sold: number;
-  image: string;
-  desc: string;
-  storeRating: number;
-  totalReviews: number;
-  responseRate: string;
-
-  seller: string;
-  categoryId: number; // 2 = Kuliner, 4 = Fashion, dst
-}
-
-const dataProduk: Product[] = [
+const dataProduk = [
   {
     id: 1,
     name: "Batagor Spesial Bandung",
@@ -27,7 +11,22 @@ const dataProduk: Product[] = [
     totalReviews: 3400,
     responseRate: "98%",
     seller: "Batagor Ibu Eni",
-    categoryId: 2, // Kuliner
+    categoryId: 2,
+    
+    storeDescription: "Specialist batagor Bandung sejak 2015. Menggunakan resep turun temurun dengan bahan-bahan pilihan terbaik.",
+    storeJoinDate: "15 Mar 2015",
+    storeTotalProducts: 12,
+    storeFollowers: 12500,
+    storeLocation: "Bandung, Jawa Barat",
+    storeIsOfficial: false,
+    storeIsPowerMerchant: true,
+    storeBadge: "Power Merchant",
+    storeResponseTime: "kurang dari 1 jam",
+    storePerformance: {
+      onTimeDelivery: "98.5%",
+      transactionSuccess: "99.2%",
+      chatResponse: "99.1%"
+    }
   },
   {
     id: 2,
@@ -41,7 +40,22 @@ const dataProduk: Product[] = [
     totalReviews: 5100,
     responseRate: "96%",
     seller: "Kebaya Cantik Jaya",
-    categoryId: 4, // Fashion
+    categoryId: 4,
+    
+    storeDescription: "Boutique kebaya modern dan tradisional dengan kualitas premium. Spesialis kebaya bordir dan kebaya wedding.",
+    storeJoinDate: "10 Jan 2018",
+    storeTotalProducts: 45,
+    storeFollowers: 34200,
+    storeLocation: "Surakarta, Jawa Tengah",
+    storeIsOfficial: true,
+    storeIsPowerMerchant: true,
+    storeBadge: "Official Store",
+    storeResponseTime: "1-2 jam",
+    storePerformance: {
+      onTimeDelivery: "97.8%",
+      transactionSuccess: "98.9%",
+      chatResponse: "96.5%"
+    }
   },
   {
     id: 3,
@@ -56,6 +70,21 @@ const dataProduk: Product[] = [
     responseRate: "92%",
     seller: "Kopi Gayo Premium",
     categoryId: 2,
+    
+    storeDescription: "Produsen kopi Arabica Gayo langsung dari perkebunan Aceh. Menyajikan kopi single origin kualitas terbaik.",
+    storeJoinDate: "05 Jul 2019",
+    storeTotalProducts: 28,
+    storeFollowers: 8900,
+    storeLocation: "Banda Aceh, Aceh",
+    storeIsOfficial: false,
+    storeIsPowerMerchant: true,
+    storeBadge: "Power Merchant",
+    storeResponseTime: "2-4 jam",
+    storePerformance: {
+      onTimeDelivery: "95.2%",
+      transactionSuccess: "97.5%",
+      chatResponse: "92.3%"
+    }
   },
   {
     id: 4,
@@ -69,7 +98,22 @@ const dataProduk: Product[] = [
     totalReviews: 2800,
     responseRate: "94%",
     seller: "Furniture Jati Asli",
-    categoryId: 9, // Furniture
+    categoryId: 9,
+    
+    storeDescription: "Pengrajin furniture kayu jati berkualitas dengan desain minimalis dan modern. Menggunakan kayu jati pilihan.",
+    storeJoinDate: "20 Nov 2017",
+    storeTotalProducts: 67,
+    storeFollowers: 21500,
+    storeLocation: "Kudus, Jawa Tengah",
+    storeIsOfficial: false,
+    storeIsPowerMerchant: true,
+    storeBadge: "Power Merchant",
+    storeResponseTime: "1-3 jam",
+    storePerformance: {
+      onTimeDelivery: "96.8%",
+      transactionSuccess: "98.3%",
+      chatResponse: "94.2%"
+    }
   },
   {
     id: 5,
@@ -83,7 +127,22 @@ const dataProduk: Product[] = [
     totalReviews: 1500,
     responseRate: "97%",
     seller: "Rotan Bali Handmade",
-    categoryId: 5, // Kerajinan
+    categoryId: 5,
+    
+    storeDescription: "Kerajinan tangan rotan khas Bali dengan desain tradisional dan modern. Dibuat oleh pengrajin lokal berpengalaman.",
+    storeJoinDate: "12 Apr 2020",
+    storeTotalProducts: 34,
+    storeFollowers: 11200,
+    storeLocation: "Denpasar, Bali",
+    storeIsOfficial: false,
+    storeIsPowerMerchant: false,
+    storeBadge: "Top Rated",
+    storeResponseTime: "kurang dari 2 jam",
+    storePerformance: {
+      onTimeDelivery: "97.2%",
+      transactionSuccess: "98.7%",
+      chatResponse: "97.1%"
+    }
   },
   {
     id: 6,
@@ -97,7 +156,22 @@ const dataProduk: Product[] = [
     totalReviews: 8700,
     responseRate: "99%",
     seller: "Apotek Sehat Selalu",
-    categoryId: 6, // Kesehatan
+    categoryId: 6,
+    
+    storeDescription: "Apotek online terpercaya menyediakan berbagai produk kesehatan, vitamin, dan suplemen dengan garansi keaslian 100%.",
+    storeJoinDate: "03 Feb 2016",
+    storeTotalProducts: 156,
+    storeFollowers: 67800,
+    storeLocation: "Jakarta Selatan, DKI Jakarta",
+    storeIsOfficial: true,
+    storeIsPowerMerchant: true,
+    storeBadge: "Official Store",
+    storeResponseTime: "kurang dari 30 menit",
+    storePerformance: {
+      onTimeDelivery: "99.1%",
+      transactionSuccess: "99.5%",
+      chatResponse: "99.3%"
+    }
   },
   {
     id: 7,
@@ -111,7 +185,22 @@ const dataProduk: Product[] = [
     totalReviews: 1200,
     responseRate: "93%",
     seller: "Toko Tani Makmur",
-    categoryId: 7, // Pertanian
+    categoryId: 7,
+    
+    storeDescription: "Menyediakan berbagai kebutuhan pertanian mulai dari benih unggul, pupuk, hingga alat pertanian. Berpengalaman sejak 2014.",
+    storeJoinDate: "18 Sep 2014",
+    storeTotalProducts: 89,
+    storeFollowers: 7800,
+    storeLocation: "Bogor, Jawa Barat",
+    storeIsOfficial: false,
+    storeIsPowerMerchant: true,
+    storeBadge: "Power Merchant",
+    storeResponseTime: "3-5 jam",
+    storePerformance: {
+      onTimeDelivery: "94.5%",
+      transactionSuccess: "96.8%",
+      chatResponse: "93.2%"
+    }
   },
   {
     id: 8,
@@ -119,20 +208,29 @@ const dataProduk: Product[] = [
     price: 18500000,
     rating: 4.9,
     sold: 89,
-    image: "https://images.unsplash.com/photo 1611078489935-2a3b2c4f8c9f?w=400",
+    image: "https://images.unsplash.com/photo-1611078489935-2a3b2c4f8c9f?w=400",
     desc: "Laptop gaming performa tinggi dengan RTX 4060, cocok untuk gaming dan editing.",
     storeRating: 4.8,
     totalReviews: 560,
     responseRate: "95%",
     seller: "Gadget Pro Indonesia",
-    categoryId: 8, // Elektronik
+    categoryId: 8,
+    
+    storeDescription: "Authorized dealer berbagai brand gadget ternama. Menyediakan laptop, smartphone, dan aksesori elektronik dengan garansi resmi.",
+    storeJoinDate: "25 Jun 2021",
+    storeTotalProducts: 234,
+    storeFollowers: 18900,
+    storeLocation: "Tangerang, Banten",
+    storeIsOfficial: true,
+    storeIsPowerMerchant: true,
+    storeBadge: "Official Store",
+    storeResponseTime: "1-2 jam",
+    storePerformance: {
+      onTimeDelivery: "98.2%",
+      transactionSuccess: "99.0%",
+      chatResponse: "95.4%"
+    }
   },
 ];
 
 export default dataProduk;
-
-//instalasi nativewind
-//instalasi gestures
-//instalasi async-storage
-// instalasi react-navigation dependencies
-// instalasi react-navigation navigators
