@@ -104,50 +104,52 @@ export default function Homepage() {
       <SafeAreaView className="flex-1 bg-gray-50">
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Profile */}
-          <View className="bg-white px-6 pt-4 pb-6 shadow-sm">
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center space-x-4">
-                <Image
-                  source={require("../../assets/images/Profile.jpg")}
-                  className="max-w-14 max-h-14 rounded-full border-2 border-indigo-100"
-                />
-                <View>
-                  <Text className="text-2xl font-bold text-gray-800">Halo, Elaina!</Text>
-                  <Text className="text-gray-500">Selamat berbelanja lagi bro</Text>
+          <TouchableOpacity onPress={() => router.push("/Profile")}>
+            <View className="bg-white px-6 pt-4 pb-6 shadow-sm">
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center space-x-4">
+                  <Image
+                    source={require("../../assets/images/Profile.jpg")}
+                    className="max-w-14 max-h-14 rounded-full border-2 border-indigo-100"
+                  />
+                  <View>
+                    <Text className="text-2xl font-bold text-gray-800">Halo, Elaina!</Text>
+                    <Text className="text-gray-500">Selamat berbelanja lagi bro</Text>
+                  </View>
+                </View>
+                <View className="flex-row gap-4">
+                  <TouchableOpacity 
+                    className="relative" 
+                    onPress={() => router.push("/Favorites")}
+                  >
+                    <Ionicons name="heart-outline" size={28} color="#1f2937" />
+                    {favorites.length > 0 && (
+                      <View className="absolute -top-1 -right-1 bg-red-500 w-5 h-5 rounded-full justify-center items-center">
+                        <Text className="text-white text-xs font-bold text-center w-full">
+                          {favorites.length}
+                        </Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                  
+                  {/* Cart Icon dengan Counter */}
+                  <TouchableOpacity 
+                    className="relative" 
+                    onPress={() => router.push("/Cartpage")}
+                  >
+                    <Ionicons name="cart-outline" size={28} color="#1f2937" />
+                    {getCartItemsCount() > 0 && (
+                      <View className="absolute -top-1 -right-1 bg-red-500 w-5 h-5 rounded-full justify-center items-center">
+                        <Text className="text-white text-xs font-bold text-center w-full">
+                          {getCartItemsCount() > 99 ? '99+' : getCartItemsCount()}
+                        </Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
                 </View>
               </View>
-              <View className="flex-row gap-4">
-                <TouchableOpacity 
-                  className="relative" 
-                  onPress={() => router.push("/Favorites")}
-                >
-                  <Ionicons name="heart-outline" size={28} color="#1f2937" />
-                  {favorites.length > 0 && (
-                    <View className="absolute -top-1 -right-1 bg-red-500 w-5 h-5 rounded-full justify-center items-center">
-                      <Text className="text-white text-xs font-bold text-center w-full">
-                        {favorites.length}
-                      </Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-                
-                {/* Cart Icon dengan Counter */}
-                <TouchableOpacity 
-                  className="relative" 
-                  onPress={() => router.push("/Cartpage")}
-                >
-                  <Ionicons name="cart-outline" size={28} color="#1f2937" />
-                  {getCartItemsCount() > 0 && (
-                    <View className="absolute -top-1 -right-1 bg-red-500 w-5 h-5 rounded-full justify-center items-center">
-                      <Text className="text-white text-xs font-bold text-center w-full">
-                        {getCartItemsCount() > 99 ? '99+' : getCartItemsCount()}
-                      </Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              </View>
             </View>
-          </View>
+          </TouchableOpacity>
 
           {/* Search Bar */}
           <View className="px-6 mt-6">

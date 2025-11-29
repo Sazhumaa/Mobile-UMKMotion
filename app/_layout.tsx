@@ -26,6 +26,8 @@ export default function RootLayout() {
             <Stack.Screen name="Favorites" options={{ headerShown: false }} />
             <Stack.Screen name="Detailproduct" options={{ headerShown: false }} />
             <Stack.Screen name="Cartpage" options={{ headerShown: false }} />
+            <Stack.Screen name="Toko" options={{ headerShown: false }} />
+            <Stack.Screen name="Profile" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>
