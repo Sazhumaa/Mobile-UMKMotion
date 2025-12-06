@@ -195,7 +195,7 @@ export default function Favorites() {
         return (
           <View key={item.id} className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 mb-5">
             <View className="relative">
-              <Image source={item.image} className="w-full h-48" resizeMode="cover" />
+              <Image source={item.image} className="w-full max-h-48"  />
               <TouchableOpacity 
                 className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full"
                 onPress={() => handleRemoveFavorite(item)}
